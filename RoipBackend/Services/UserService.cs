@@ -44,7 +44,7 @@ namespace RoipBackend.Services
                 else
                 {
                     //await _loggerService.LogWarningAsync(Consts.NO_USERS_FOUND_STR);
-                    return new NotFoundObjectResult(new { Message = Consts.NO_USERS_FOUND_STR, Error = Consts.NO_USERS_FOUND_DESC_STR }));
+                    return new NotFoundObjectResult(new { Message = Consts.NO_USERS_FOUND_STR, Error = Consts.NO_USERS_FOUND_DESC_STR });
                 }
             }
             catch (Exception e)
@@ -239,7 +239,7 @@ namespace RoipBackend.Services
                     //_loggerService.LogErrorAsync($"{Consts.EMAIL_NOT_FOUND1_STR} {email} {Consts.EMAIL_NOT_FOUND2_STR}");
                     return new NotFoundObjectResult(new { Message = $"{Consts.EMAIL_NOT_FOUND1_STR} {email} {Consts.EMAIL_NOT_FOUND2_STR}",
                     Error = Consts.NO_EMAIL_FOUND_STR })
-                    {                        {
+                    {
                         StatusCode = StatusCodes.Status404NotFound
                     };                   
                 }

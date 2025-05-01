@@ -17,7 +17,7 @@ namespace RoipBackend.Controllers
 
         private readonly IConfiguration _configuration;
         private readonly UserService _userService;
-        private readonly LoggerService _loggerService
+        private readonly LoggerService _loggerService;
 
         public AuthController(IConfiguration configuration, UserService userService,LoggerService loggerService)
         {
@@ -36,8 +36,8 @@ namespace RoipBackend.Controllers
 
             // Extract the message
             string message = response?.Message;
-            string eror = response?.Error;           
-            HandleServiceResult(response, message, error)               
+            string eror = response?.Error;
+            HandleServiceResult(response, message, error);             
         }
 
         [HttpPost("register")]
@@ -48,7 +48,7 @@ namespace RoipBackend.Controllers
                 return ModelStateError(Consts.VALIDATION_FAILED_STR);
 
             if (!_userService.IsValidEmail(user.Email))
-                return ModelStateError(Consts.INVALID_EMAIL_FORMAT_STR)
+                return ModelStateError(Consts.INVALID_EMAIL_FORMAT_STR);
 
             var serviceResult = await _userService.RegisterUserAsync(user);
             // Extract the response object
@@ -57,7 +57,7 @@ namespace RoipBackend.Controllers
             // Extract the message
             string message = response?.Message;
             string eror = response?.Error;
-            HandleServiceResult(response, message, error)
+            HandleServiceResult(response, message, error);
         }
 
         [HttpPost("login")]
@@ -67,12 +67,12 @@ namespace RoipBackend.Controllers
             if (!ModelState.IsValid)
                 return ModelStateError();
 
-            var serviceResult await _userService.LogIn(email, password);           
+            var serviceResult = await _userService.LogIn(email, password);           
 
             // Extract the message
             string message = response?.Message;
             string eror = response?.Error;
-            HandleServiceResult(response, message, error)
+            HandleServiceResult(response, message, error);
         }                    
 
         [HttpPost("logout")]
@@ -84,7 +84,7 @@ namespace RoipBackend.Controllers
             // Extract the message
             string message = response?.Message;
             string eror = response?.Error;
-            HandleServiceResult(response, message, error)
+            HandleServiceResult(response, message, error);
         }
 
 
@@ -92,15 +92,15 @@ namespace RoipBackend.Controllers
         public async Task<IActionResult> EditUserAsync([FromBody] User user)
         {
             //TODO: Add logger            
-            if (!ModelState.IsValid)            
-                return ModelStateError(Consts.USER_PROPERTIES_NOT_VALID_STR)
+            if (!ModelState.IsValid)
+                return ModelStateError(Consts.USER_PROPERTIES_NOT_VALID_STR);
 
-            var serviceResult await _userService.EditUserAsync(user);
+            var serviceResult = await _userService.EditUserAsync(user);
 
             // Extract the message
             string message = response?.Message;
             string eror = response?.Error;
-            HandleServiceResult(response, message, error)
+            HandleServiceResult(response, message, error);
         }
         private IActionResult ModelStateError(string message)
         {
