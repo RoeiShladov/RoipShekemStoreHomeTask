@@ -7,10 +7,10 @@ namespace RoipBackend.Models
     {
         public char ConnectionId { get; set; } // מזהה החיבור של SignalR
 
-        public int UserId { get; set; } // מזהה המשתמש
+        public int UserId { get; set; } // .מזהה המשתמש
 
-        public DateTime ConnectedAt { get; set; } // תאריך ושעת החיבור
+        public DateTime ConnectedAt { get; set; } // תאריך ושעת החיבור.
 
-        public DateTime? DisconnectedAt { get; set; } // תאריך ושעת הניתוק (יכול להיות NULL)
+        public DateTime? DisconnectedAt { get; set; } // תאריך ושעת הניתוק (יכול להיות NULL).
     }
 }
