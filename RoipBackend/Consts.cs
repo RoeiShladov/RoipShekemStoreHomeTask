@@ -1,0 +1,67 @@
+﻿using RoipBackend.Models;
+
+namespace RoipBackend
+{
+    public class Consts
+    {        
+        public const int ADMIN = 0; // Role 0 - Admin
+        public const int CUSTOMER = 1; // Role 1 - Customer
+        public const int ID_MINIMUM_RANGE = 1;
+        public const int ID_MAXIMUM_RANGE = 100;
+        public const int INTERNAL_SERVER_ERROR_NUMBER = 500;
+        public const int MINIMUM_USER_NAME_LENGTH = 2;
+        public const int MINIMUM_PASSWORD_LENGTH = 8;
+        public const int MAXIMUM_PASSWORD_LENGTH = 16;
+        public const int DB_REQUEST_TIMEOUT = 30; // 30 seconds
+        public const string INVALID_ADDRESS_STR = "Address must start with a building number followed by the street name.";
+        public const string ADDRESS_REGEX_STR = @"^\d+\s[A-Za-z\s]+";
+        public const string NO_EMAIL_FOUND_STR = "Email not found, please enter a different email."; 
+        public const string EMAIL_NOT_FOUND1_STR = "User with Email ";
+        public const string EMAIL_NOT_FOUND2_STR = " was not found in Database. Please enter different email";
+        public const string USER_REGISTERED_SUCCESSFULLY_STR = "User registered successfully.";
+        public const string REGISTRATION_FAILED_STR = "Registration failed.";
+        public const string REGISTRATION_FAILED_DESC_STR = "Registration failed via database registration problem. Please contact Admin.";
+        public const string USER_UPDATED_SUCCESSFULLY_STR = "User updated successfully.";
+        public const string USER_LOGGED_IN_SUCCESSFULLY_STR = "User updated successfully.";
+        public const string VALIDATION_FAILED_STR = "Validation failed.";
+        public const string USER_PROPERTIES_NOT_VALID_STR = "Some of User properties are not valid.";
+        public const string USER_PASSWORD_REQUIRED_STR = "Username and Password are required.";
+        public const string INVALID_EMAIL_FORMAT_STR = "Invalid email format.";
+        public const string LOGOUT_SUCCESSFULLY_STR = "User logged out successfully.";
+        public const string USER_NAME_MANDATORY_STR = "Username is mandatory.";
+        public const string USER_PASSWORD_MANDATORY_STR = "Password is mandatory.";
+        public const string USER_EMAIL_MANDATORY_STR = "Email is mandatory.";
+        public const string USER_PHONE_MANDATORY_STR = "Phone number is mandatory.";
+        public const string USER_ADDRESS_MANDATORY_STR = "Address is mandatory.";
+        public const string USERS_RETRIEVE_SUCCESS_STR = "Users retrieved successfully.";
+        public const string USERS_RETRIEVE_SUCCESS_DESC_STR = "Users retrieved successfully from the database.";
+        public const string NO_USERS_FOUND_STR = "No users found.";
+        public const string NO_USERS_FOUND_DESC_STR = "No users found in the database.";
+        public const string FAILED_RETRIEVING_USERS = "Failed retrieving users.";
+        public const string FAILED_RETRIEVING_USERS_DESC = "There was a general issue retrieving the users FROM THE DATABASE. Please contact Admin";
+        public const string PLEASE_VALID_EMAIL_STR = "Please enter a valid email address.";
+        public const string PLEASE_VALID_PHONE_STR = "Please enter a valid phone number.";
+        public const string DATABASE_CONNECTION_ERROR_STR = "Database connection error";
+        public const string DATABASE_CONNECTION_ERROR_DESC_STR = "Database connection error message: ";
+        public const string REQUEST_TIME_OUT_STR = "Request timeout";
+        public const string DATABASE_CONNECTION_TIMEOUT_STR = "The Database connection exceeded the timeout limit. (30 Seconds).";
+        public const string GET_ALL_USERS_FINALLY_MSG_STR = "GetAllUsersAsync function was ended";
+        public const string GET_ALL_USERS_FINALLY_MSG_DETAILS_STR = "Function purpose: Get all users from MYSQL DB.";
+        public const string REGISTER_USER_FINALLY_MSG_STR = "RegisterUserAsync function was ended";
+        public const string REGISTER_USER_FINALLY_MSG_DETAILS_STR = "Function purpose: Register user to MYSQL DB.";
+        public const string WRONG_PASSWORD_STR = "Wrong user password";
+        public const string WRONG_PASSWORD_DESC_STR = "The password you entered is incorrect. Please try again.";
+        public const string FAILED_LOGIN_STR = "Failed login";
+        public const string FAILED_LOGIN_DESC_STR = "Failed to logIn, database problem. Please contact Admin.";
+        public const string LOGIN_ASYNC_FINALLY_STR = "Login function was ended";
+        public const string LOGIN_ASYNC_FINALLY_MSG_DETAILS_STR = "Function purpose: Login user to the store - check if user exists in MYSQL DB.";
+        public const string EMAIL_ALREADY_EXISTS_STR = "Email already exists in the system, please write other email";
+        public const string FAILED_EDIT_STR = "Failed to edit user properties.";
+        public const string FAILED_EDIT_DESC_STR = "Failed edit via database problem. Please contact Admin.";
+        public const string EDIT_USER_FINALLY_STR = "EditUserAsync function was ended";
+        public const string EDIT_USER_FINALLY_MSG_STR = "Function purpose: Edit user properties in MYSQL DB.";
+        public const string FAILED_RETRIEVING_USER_STR = "Failed to retrieve user by email: ";
+        public const string FAILED_RETRIEVING_USER_DESC_STR = "Failed to retrieve user by email via database problem. Please contact Admin.";
+        public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error.";
+    }
+}
