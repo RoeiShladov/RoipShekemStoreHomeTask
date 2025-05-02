@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RoipBackend.Interfaces;
+using Microsoft.VisualStudio.OLE.Interop;
 
 namespace RoipBackend.Services
 {
@@ -11,7 +12,7 @@ namespace RoipBackend.Services
         private readonly AppDbContext _DBcontext;
         private readonly LoggerService _loggerService;
 
-        public object Guard { get; }
+        //TODO: Add loggers to this class
 
         public ProductService(AppDbContext context, LoggerService loggerService)
         {
@@ -36,7 +37,7 @@ namespace RoipBackend.Services
                 if (result != null && result.Count > 0)
                 {
                     //await _loggerService.LogInfoAsync(Consts.PRODUCTS_RETRIEVE_SUCCESS_STR, Consts.PRODUCT_RETRIEVE_SUCCESS_DESC_STR);
-                    return new OkObjectResult(new { Message = Consts.PRODUCTS_RETRIEVE_SUCCESS_STR, Products = result })
+                    return new OkObjectResult(new { Message = Consts.PRODUCTS_RETRIEVE_SUCCESS_STR, Data = result })
                     {
                         StatusCode = StatusCodes.Status200OK
                     };
@@ -62,31 +63,58 @@ namespace RoipBackend.Services
             }
         }
 
-        //TODO: Add Authorize check (admin only)
-        public async Task<IActionResult> AddProductAsync(Product product)
+        public async Task<IActionResult> AddProductAsync(Product newProduct)
         {
             try
-            {                            
-                _DBcontext.Products.Add(product);
+            {
+                var existingProduct = await _DBcontext.Products.FirstOrDefaultAsync(p => p.ProductName == newProduct.ProductName);
+                if (existingProduct != null)
+                {
+                    return new ConflictObjectResult(new
+                    {
+                        Message = Consts.PRODUCT_ALREADY_EXISTS_STR,
+                        Error = Consts.PRODUCT_ALREADY_EXISTS_DESC_STR
+                    })
+                    {
+                        StatusCode = StatusCodes.Status409Conflict
+                    };
+                }
+
+                // Add the new product and save changes, handle concurrency
+                _DBcontext.Products.Add(newProduct);                               
                 await _DBcontext.SaveChangesAsync();
+
                 return new OkObjectResult(new { Message = Consts.PRODUCT_SUCCESSFULLY_ADDED_STR })
                 {
                     StatusCode = StatusCodes.Status200OK
                 };
-            }          
-            catch (OperationCanceledException e)
+            }            
+            catch (DbUpdateException)
             {
-                //await _loggerService.LogErrorAsync(e.Message, Consts.DATABASE_CONNECTION_TIMEOUT_STR);
-
-                return new ObjectResult(new { Message = Consts.REQUEST_TIME_OUT_STR, Error = Consts.DATABASE_CONNECTION_TIMEOUT_STR })
+                return new ConflictObjectResult(new
+                {
+                    Message = Consts.DATABASE_UPDATE_ERROR_STR,
+                    Error = Consts.DATABASE_UPDATE_ERROR_DESC_STR
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                return new ObjectResult(new
+                {
+                    Message = Consts.REQUEST_TIME_OUT_STR,
+                    Error = Consts.DATABASE_CONNECTION_TIMEOUT_STR
+                })
                 {
                     StatusCode = StatusCodes.Status408RequestTimeout
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
-                //await _loggerService.LogErrorAsync(e.Message, Consts.FAILED_ADDING_PRODUCT_STR);
-                return new BadRequestObjectResult(new { Message = Consts.FAILED_ADDING_PRODUCT_STR, Error = Consts.FAILED_ADDING_PRODUCT_DESC_STR });
+                return new BadRequestObjectResult(new
+                {
+                    Message = Consts.FAILED_ADDING_PRODUCT_STR,
+                    Error = Consts.FAILED_ADDING_PRODUCT_DESC_STR
+                });
             }
         }
 
@@ -107,6 +135,8 @@ namespace RoipBackend.Services
                     };
                 }
 
+                // Handle concurrency by setting the original RowVersion, removing product, and saving changes
+                _DBcontext.Entry(product).Property(p => p.RowVersion).OriginalValue = product.RowVersion;
                 _DBcontext.Products.Remove(product);
                 await _DBcontext.SaveChangesAsync();
 
@@ -114,15 +144,30 @@ namespace RoipBackend.Services
                 {
                     StatusCode = StatusCodes.Status200OK
                 };
-            }            
-            catch (OperationCanceledException e)
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return new ConflictObjectResult(new
+                {
+                    Message = Consts.CONCURRENCY_ERROR_STR,
+                    Error = Consts.CONCURRENCY_ERROR_DESC_STR
+                })
+                {
+                    StatusCode = StatusCodes.Status409Conflict
+                };
+            }
+            catch (DbUpdateException)
+            {
+                return new ConflictObjectResult(new { Message = Consts.DATABASE_UPDATE_ERROR_STR, Error = Consts.DATABASE_UPDATE_ERROR_DESC_STR });
+            }
+            catch (OperationCanceledException)
             {
                 return new ObjectResult(new { Message = Consts.REQUEST_TIME_OUT_STR, Error = Consts.DATABASE_CONNECTION_TIMEOUT_STR })
                 {
                     StatusCode = StatusCodes.Status408RequestTimeout
                 };
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 return new BadRequestObjectResult(new { Message = Consts.FAILED_DELETING_PRODUCT_STR, Error = Consts.FAILED_DELETING_PRODUCT_DESC_STR });
             }
@@ -130,9 +175,24 @@ namespace RoipBackend.Services
 
         public async Task<IActionResult> BuyProductAsync(string productName, int quantity)
         {
+            //Client side validation should be fine but it is good to have server side validation as well.
+            if (string.IsNullOrWhiteSpace(productName))
+            {
+                return new BadRequestObjectResult(new { Message = Consts.PRODUCT_NOT_FOUND_STR, Error = Consts.PRODUCT_NOT_FOUND_STR });
+            }
+
+            if (quantity < 0)
+            {
+                return new BadRequestObjectResult(new { Message = Consts.INSUFFICIENT_QUANTITY_STR, Eror = Consts.INSUFFICIENT_QUANTITY_STR });
+            }
+
+            using var transaction = await _DBcontext.Database.BeginTransactionAsync();
             try
             {
-                var product = await _DBcontext.Products.FirstOrDefaultAsync(p => p.ProductName == productName);
+                var product = await _DBcontext.Products
+                    .Where(p => p.ProductName == productName)
+                    .FirstOrDefaultAsync();
+
                 if (product == null)
                 {
                     return new NotFoundObjectResult(new
@@ -144,29 +204,44 @@ namespace RoipBackend.Services
                         StatusCode = StatusCodes.Status404NotFound
                     };
                 }
-                else
-                {          
-                    if (product.Quantity <= quantity)
+
+                if (product.Quantity < quantity)
+                {
+                    return new BadRequestObjectResult(new
                     {
-                        return new BadRequestObjectResult(new { Message = Consts.INSUFFICIENT_QUANTITY_STR, Error = Consts.INSUFFICIENT_QUANTITY_DESC_STR })
-                        {
-                            StatusCode = StatusCodes.Status400BadRequest
-                        };
-                    }
-                    product.Quantity -= quantity;
-                        
-                    // Save changes to the database  
-                    await _DBcontext.SaveChangesAsync();
-                    return new OkObjectResult(new { Message = Consts.PRODUCT_QUANTITY_SUCCESSFULLY_UPDATED_STR })
+                        Message = Consts.INSUFFICIENT_QUANTITY_STR,
+                        Error = Consts.INSUFFICIENT_QUANTITY_DESC_STR
+                    })
                     {
-                        StatusCode = StatusCodes.Status200OK
-                    };                                                                        
-                }                    
-            }            
+                        StatusCode = StatusCodes.Status400BadRequest
+                    };
+                }
+
+                product.Quantity -= quantity;
+
+                // Handle concurrency by setting the original RowVersion, and save changes
+                _DBcontext.Entry(product).Property(p => p.RowVersion).OriginalValue = product.RowVersion;
+                await _DBcontext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
+                return new OkObjectResult(new { Message = Consts.PRODUCT_QUANTITY_SUCCESSFULLY_UPDATED_STR })
+                {
+                    StatusCode = StatusCodes.Status200OK
+                };
+            }
+            catch (DbUpdateConcurrencyException e)
+            {
+                await transaction.RollbackAsync();
+                return new ConflictObjectResult(new { Message = Consts.CONCURRENCY_ERROR_STR, Error = Consts.CONCURRENCY_ERROR_DESC_STR });
+            }
+            catch (DbUpdateException e)
+            {
+                await transaction.RollbackAsync();
+                return new ConflictObjectResult(new { Message = Consts.DATABASE_UPDATE_ERROR_STR, Error = Consts.DATABASE_UPDATE_ERROR_DESC_STR });
+            }
             catch (OperationCanceledException e)
             {
-                //await _loggerService.LogErrorAsync(e.Message, Consts.DATABASE_CONNECTION_TIMEOUT_STR);  
-
+                await transaction.RollbackAsync();
                 return new ObjectResult(new { Message = Consts.REQUEST_TIME_OUT_STR, Error = Consts.DATABASE_CONNECTION_TIMEOUT_STR })
                 {
                     StatusCode = StatusCodes.Status408RequestTimeout
@@ -174,36 +249,38 @@ namespace RoipBackend.Services
             }
             catch (Exception e)
             {
-                //await _loggerService.LogErrorAsync(e.Message, Consts.FAILED_LOGIN_STR);  
+                await transaction.RollbackAsync();
                 return new BadRequestObjectResult(new { Message = Consts.FAILED_UPDATE_PRODUCT_STR, Error = Consts.FAILED_UPDATE_PRODUCT_DESC_STR });
             }
         }
 
-        public async Task<IActionResult> SearchFilterAsync(string filterText)
+
+        public async Task<IActionResult> SearchFilterAsync(string filterText, int? minPrice = null, int? maxPrice = null)
         {
             try
-            {
-                // Use EF.Functions.Like for case-insensitive search
-                var filteredProducts = await _DBcontext.Products
-                    .Where(p => EF.Functions.Like(p.ProductName, $"%{filterText}%"))
-                    .ToListAsync();
-
-                if (filteredProducts == null || !filteredProducts.Any())
+            {                
+                var query = _DBcontext.Products.AsQueryable();
+                if (!string.IsNullOrWhiteSpace(filterText))
                 {
-                    return new NotFoundObjectResult(new
-                    {
-                        Message = Consts.NO_PRODUCTS_FOUND_STR,
-                        Error = Consts.NO_PRODUCTS_FOUND_DESC_STR
-                    })
-                    {
-                        StatusCode = StatusCodes.Status404NotFound
-                    };
+                    query = query.Where(p => EF.Functions.Like(p.ProductName, $"%{filterText}%"));
                 }
 
+                if (minPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price >= minPrice.Value);
+                }
+
+                if (maxPrice.HasValue)
+                {
+                    query = query.Where(p => p.Price <= maxPrice.Value);
+                }
+
+                var filteredProducts = await query.ToListAsync();
+                //returned data can be null, the client will handle it and represent a empty list to the user.
                 return new OkObjectResult(new
                 {
                     Message = Consts.FILTERED_PRODUCTS_RETRIEVE_SUCCESS_STR,
-                    Products = filteredProducts
+                    Data = filteredProducts
                 })
                 {
                     StatusCode = StatusCodes.Status200OK
@@ -218,17 +295,6 @@ namespace RoipBackend.Services
                 })
                 {
                     StatusCode = StatusCodes.Status408RequestTimeout
-                };
-            }
-            catch (DbUpdateException e)
-            {
-                return new ObjectResult(new
-                {
-                    Message = Consts.DATABASE_UPDATE_ERROR_STR,
-                    Error = Consts.DATABASE_UPDATE_ERROR_DESC_STR
-                })
-                {
-                    StatusCode = StatusCodes.Status500InternalServerError
                 };
             }
             catch (InvalidOperationException e)

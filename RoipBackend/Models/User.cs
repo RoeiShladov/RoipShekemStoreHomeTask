@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoipBackend.Models
 {
+    [Index(nameof(Email), IsUnique = true)]
     public class User
     {
         [Required]
@@ -33,7 +34,10 @@ namespace RoipBackend.Models
 
         [Required(ErrorMessage = Consts.USER_ADDRESS_MANDATORY_STR)]
         [RegularExpression(Consts.ADDRESS_REGEX_STR, ErrorMessage = Consts.INVALID_ADDRESS_STR)]
-        public string Address { get; set; }  
+        public string Address { get; set; }
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
 
         public User(string username, string password, string role, int balance, string email, string phoneNumber, string address)
         { 

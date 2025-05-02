@@ -93,5 +93,9 @@ namespace RoipBackend
         public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error.";
         public const string LOGOUT_FAILED_STR = "Logout failed";
         public const string PRODUCT_NOT_FOUND_STR = "Product not found";
+        public const string PRODUCT_ALREADY_EXISTS_STR = "Product already exists";
+        public const string PRODUCT_ALREADY_EXISTS_DESC_STR = "Product already exists in the system, please write other product name";
+        public const string CONCURRENCY_ERROR_STR = "Concurrency error";
+        public const string CONCURRENCY_ERROR_DESC_STR = "Please try again or contact Admin. ";
     }
 }

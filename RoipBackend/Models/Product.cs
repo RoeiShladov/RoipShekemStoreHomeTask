@@ -3,7 +3,8 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoipBackend.Models
-{
+{   
+    [Index(nameof(ProductName), IsUnique = true)]
     public class Product
     {
         [Required]
@@ -29,7 +30,10 @@ namespace RoipBackend.Models
 
         [Url(ErrorMessage = Consts.IMAGE_URL_VALIDATION_STR)]
         public string ImageUrl { get; set; }
-       
+
+        [Timestamp]
+        public byte[] RowVersion { get; set; }
+
         public Product(string productName, string description, int price, int quantity, string imageUrl)
         {
             this.ProductName = productName;
