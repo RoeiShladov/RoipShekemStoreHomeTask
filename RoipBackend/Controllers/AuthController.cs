@@ -1,10 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using RoipBackend.Dto;
-using RoipBackend.Interfaces;
 using RoipBackend.Models;
 using RoipBackend.Services;
-using System.Security.Claims;
-using System.Text;
+using RoipBackend.Utilities;
 
 namespace RoipBackend.Controllers
 {
@@ -12,146 +11,74 @@ namespace RoipBackend.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        //TODO: Add [Authorize] attribute to controller's admin functions
         //TODO: Add refresh token / cookies functionality (???)
 
         private readonly IConfiguration _configuration;
         private readonly UserService _userService;
         private readonly LoggerService _loggerService;
 
-        public AuthController(IConfiguration configuration, UserService userService,LoggerService loggerService)
+        public AuthController(IConfiguration configuration, UserService userService, LoggerService loggerService)
         {
-            this._configuration = configuration;
-            this._userService = userService;
-            this._loggerService = loggerService;
+            _configuration = configuration;
+            _userService = userService;
+            _loggerService = loggerService;
         }
 
         [HttpGet("get-all-users")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetAllUsersAsync()
         {
             //TODO: Add logger           
-            var serviceResult = await _userService.GetAllUsersAsync();            
-            // Extract the response object
-            var response = okResult.Value as dynamic;
-
-            // Extract the message
-            string message = response?.Message;
-            string eror = response?.Error;
-            HandleServiceResult(response, message, error);             
+            IActionResult serviceResult = await _userService.GetAllUsersAsync();                        
+            return HandleServiceResult(serviceResult);             
         }
 
         [HttpPost("register")]
+        [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> RegisterAsync([FromBody] User user)
         {
             //TODO: Add logger           
             if (!ModelState.IsValid)
                 return ModelStateError(Consts.VALIDATION_FAILED_STR);
 
-            if (!_userService.IsValidEmail(user.Email))
-                return ModelStateError(Consts.INVALID_EMAIL_FORMAT_STR);
-
-            var serviceResult = await _userService.RegisterUserAsync(user);
-            // Extract the response object
-            var response = okResult.Value as dynamic;
-
-            // Extract the message
-            string message = response?.Message;
-            string eror = response?.Error;
-            HandleServiceResult(response, message, error);
+            IActionResult serviceResult = await _userService.RegisterUserAsync(user);            
+            return HandleServiceResult(serviceResult);
         }
 
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> LogIn([FromBody] string email, string password)
         {
             //TODO: Add logger           
             if (!ModelState.IsValid)
-                return ModelStateError();
+                return ModelStateError(Consts.VALIDATION_FAILED_STR);
 
-            var serviceResult = await _userService.LogIn(email, password);           
-
-            // Extract the message
-            string message = response?.Message;
-            string eror = response?.Error;
-            HandleServiceResult(response, message, error);
+            IActionResult serviceResult = await _userService.LogInAsync(email, password);                       
+            return HandleServiceResult(serviceResult);
         }                    
 
         [HttpPost("logout")]
+        [Authorize(Roles = "Admin,Customer")]
         public IActionResult Logout()
         {
             //TODO: Add logger                           
-            var serviceResult = _userService.Logout();
-
-            // Extract the message
-            string message = response?.Message;
-            string eror = response?.Error;
-            HandleServiceResult(response, message, error);
+            IActionResult serviceResult = _userService.Logout();
+            return HandleServiceResult(serviceResult);
         }
-
-
-        [HttpPut("edit-User")]
-        public async Task<IActionResult> EditUserAsync([FromBody] User user)
-        {
-            //TODO: Add logger            
-            if (!ModelState.IsValid)
-                return ModelStateError(Consts.USER_PROPERTIES_NOT_VALID_STR);
-
-            var serviceResult = await _userService.EditUserAsync(user);
-
-            // Extract the message
-            string message = response?.Message;
-            string eror = response?.Error;
-            HandleServiceResult(response, message, error);
-        }
-        private IActionResult ModelStateError(string message)
+        
+        private BadRequestObjectResult ModelStateError(string message)
         {
             var errors = ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .ToList();
 
-            return BadRequest(new { Message = message, Errors = errors });
-        }        
+            return new BadRequestObjectResult(new { Message = message, Errors = errors });
+        }
 
-        private IActionResult HandleServiceResult(IActionResult serviceResult, string message, string error)
-        {            
-            switch (serviceResult)
-            {
-                case OkObjectResult okResult:
-                    return Ok(new
-                    {
-                        Message = message,
-                        Data = okResult.Value
-                    });
-
-                case BadRequestObjectResult badRequestResult:
-                    if(error != null)
-                        return new BadRequestObjectResult(new {  message = message, Error = error });
-                    return new BadRequestObjectResult(new { message = message });
-
-                case NotFoundObjectResult:
-                    if (error != null)
-                        return new NotFoundObjectResult( new { message = message, Error = error });
-                    return new NotFoundObjectResult(new { Message = message });
-
-                case UnauthorizedResult:
-                    if (error != null)
-                        return new UnauthorizedObjectResult( new { message = message, Error = error });
-                    return UnauthorizedObjectResult(new { Message = message });
-
-
-                case StatusCodeResult statusCodeResult:
-                    if (error != null)
-                        return new StatusCode(statusCodeResult.StatusCode, new { message = message, Error = error });
-                    return StatusCode(statusCodeResult.StatusCode, new { Message = message });
-
-                case ObjectResult objectResult:
-                    if (error != null)
-                        return new StatusCode(objectResult.StatusCode, new { message = message, Error = error });
-                    return StatusCode(objectResult.StatusCode, new { Message = message });
-                
-                default:
-                    return StatusCode(Consts.INTERNAL_SERVER_ERROR_NUMBER, new { Message = Consts.INTERNAL_SERVER_ERROR_STR });
-            }
+        private static ActionResult HandleServiceResult(IActionResult serviceResult)
+        {
+            return ServiceResultHandler.HandleServiceResult(serviceResult);
         }
     }  
 }

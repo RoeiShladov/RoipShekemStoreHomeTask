@@ -8,6 +8,5 @@
 
         Task LogErrorAsync(Exception exception, string friendlyMessage);
         Task LogFatalAsync(Exception exception, string friendlyMessage);
-
     }
 }

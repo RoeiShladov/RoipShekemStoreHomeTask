@@ -1,12 +1,14 @@
-﻿using RoipBackend.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using RoipBackend.Models;
 
 namespace RoipBackend.Interfaces
 {
     public interface IUserConnectionService
     {
-        Task AddConnectionAsync(UserConnection connection);
-        Task RemoveConnectionAsync(string connectionId);
-        Task<List<UserConnection>> GetActiveConnectionsAsync();
-        Task<UserConnection?> GetConnectionByUserIdAsync(int userId);
+        Task<IActionResult> AddConnectionAsync(UserConnection connection);
+        Task<IActionResult> RemoveConnectionAsync(string connectionId);
+        Task<IActionResult> GetActiveConnectionsAsync();
+
+        //Task<IActionResult> GetConnectionByEmailAsync(int email);
     }
 }
