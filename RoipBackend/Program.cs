@@ -2,6 +2,8 @@
 using RoipBackend.Services;
 using RoipBackend;
 using RoipBackend.Interfaces;
+using Microsoft.AspNetCore.Authorization;
+using RoipBackend.Utilities;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +21,19 @@ configuration["ConnectionStrings:RoipDbStoreConnection"] =
 configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 configuration.AddEnvironmentVariables();
 builder.Services.AddScoped<IUserService, UserService>(); // הוספת UserService ל-DI  
+builder.Services.AddSingleton<JwtHelper>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    var secretKey = configuration["Jwt:SecretKey"];
+    var issuer = configuration["Jwt:Issuer"];
+    var audience = configuration["Jwt:Audience"];
+    return new JwtHelper(secretKey, issuer, audience);
+});
+
 //builder.Services.AddScoped<IProductService, ProductService>();  
 //builder.Services.AddScoped<IUserConnectionService, UserConnectionService>();  
 //builder.Services.AddScoped<ILoggerService, LoggerService>();  
+builder.Services.AddSingleton<IAuthorizationHandler, TokenExpirationHandler>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.  

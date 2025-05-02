@@ -5,7 +5,7 @@ namespace RoipBackend.Interfaces
 {
     public interface IProductService
     {
-        Task<IActionResult> GetAllProductsAsync();
+        Task<IActionResult> GetAllProductsAsync(int pageNumber, int pageSize);
         Task<IActionResult> AddProductAsync(Product newProduct);        
 
         Task<IActionResult> BuyProductAsync(string productName, int quantity);

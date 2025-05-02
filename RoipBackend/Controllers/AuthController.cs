@@ -11,59 +11,57 @@ namespace RoipBackend.Controllers
     [Route("api/[controller]")]
     public class AuthController : ControllerBase
     {
-        //TODO: Add refresh token / cookies functionality (???)
-
+        //TODO: Add Loggers to all functions
         private readonly IConfiguration _configuration;
         private readonly UserService _userService;
         private readonly LoggerService _loggerService;
+        private readonly JwtHelper _jwtHelper;
 
-        public AuthController(IConfiguration configuration, UserService userService, LoggerService loggerService)
+        public AuthController(IConfiguration configuration, UserService userService, LoggerService loggerService, JwtHelper jwt)
         {
             _configuration = configuration;
             _userService = userService;
             _loggerService = loggerService;
+            _jwtHelper = jwt;
         }
 
         [HttpGet("get-all-users")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAllUsersAsync()
+        public async Task<IActionResult> GetAllUsersAsync(string jwt, int pageNumber, int pageSize)
         {
-            //TODO: Add logger           
-            IActionResult serviceResult = await _userService.GetAllUsersAsync();                        
-            return HandleServiceResult(serviceResult);             
-        }
+            IActionResult jwt_ValidationResult = _jwtHelper.JwtCheck(jwt);
+            if (jwt_ValidationResult is UnauthorizedObjectResult)
+                return jwt_ValidationResult;
 
+            return await _userService.GetAllUsersAsync(pageNumber, pageSize);
+        }
+        
         [HttpPost("register")]
-        [Authorize(Roles = "Admin,Customer")]
-        public async Task<IActionResult> RegisterAsync([FromBody] User user)
+        [AllowAnonymous]
+        public async Task<IActionResult> RegisterAsync(User user)
         {
             //TODO: Add logger           
             if (!ModelState.IsValid)
                 return ModelStateError(Consts.VALIDATION_FAILED_STR);
 
-            IActionResult serviceResult = await _userService.RegisterUserAsync(user);            
-            return HandleServiceResult(serviceResult);
+            return await _userService.RegisterUserAsync(user);            
         }
 
         [HttpPost("login")]
         [AllowAnonymous]
-        public async Task<IActionResult> LogIn([FromBody] string email, string password)
+        public async Task<IActionResult> LogIn(string email, string password)
         {
-            //TODO: Add logger           
             if (!ModelState.IsValid)
                 return ModelStateError(Consts.VALIDATION_FAILED_STR);
 
-            IActionResult serviceResult = await _userService.LogInAsync(email, password);                       
-            return HandleServiceResult(serviceResult);
+            return await _userService.LogInAsync(email, password);                       
         }                    
 
         [HttpPost("logout")]
         [Authorize(Roles = "Admin,Customer")]
         public IActionResult Logout()
-        {
-            //TODO: Add logger                           
-            IActionResult serviceResult = _userService.Logout();
-            return HandleServiceResult(serviceResult);
+        {            
+            return _userService.Logout();            
         }
         
         private BadRequestObjectResult ModelStateError(string message)
@@ -73,12 +71,10 @@ namespace RoipBackend.Controllers
                 .Select(e => e.ErrorMessage)
                 .ToList();
 
-            return new BadRequestObjectResult(new { Message = message, Errors = errors });
-        }
-
-        private static ActionResult HandleServiceResult(IActionResult serviceResult)
-        {
-            return ServiceResultHandler.HandleServiceResult(serviceResult);
-        }
-    }  
+            return new BadRequestObjectResult(new { Message = message, Errors = errors })
+            {
+                StatusCode = StatusCodes.Status400BadRequest
+            };
+        }        
+    }
 }

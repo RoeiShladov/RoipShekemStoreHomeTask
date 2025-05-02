@@ -3,7 +3,8 @@
 namespace RoipBackend
 {
     public class Consts
-    {                
+    {
+        public const int JWT_EXPIRATION_TIME = 60; // 60 minutes
         public const int ID_MINIMUM_RANGE = 1;
         public const int ID_MAXIMUM_RANGE = 100;
         public const int INTERNAL_SERVER_ERROR_NUMBER = 500;
@@ -78,24 +79,29 @@ namespace RoipBackend
         public const string PRODUCT_DELETED_SUCCESSFULLY_STR = "Product deleted successfully from the database.";
         public const string FAILED_DELETING_PRODUCT_STR = "Failed to delete product from the database.";
         public const string FAILED_DELETING_PRODUCT_DESC_STR = "Failed to delete product from the database via database problem. Please contact Admin.";
-        public const string DATABASE_CONNECTION_TIMEOUT_STR = "The Database connection exceeded the timeout limit. (30 Seconds).";
+        public const string DATABASE_CONNECTION_TIMEOUT_STR = "The Database connection exceeded the timeout limit. (30 Seconds)." +
+            "\n Please try again or contact Admin.";
         public const string WRONG_PASSWORD_STR = "Wrong user password";
         public const string WRONG_PASSWORD_DESC_STR = "The password you entered is incorrect. Please try again.";
         public const string DATABASE_UPDATE_ERROR_STR = "Database update error";
         public const string DATABASE_UPDATE_ERROR_DESC_STR = "Database update error message: ";
         public const string FAILED_LOGIN_STR = "Failed login";
         public const string FAILED_LOGIN_DESC_STR = "Failed to logIn, database problem. Please contact Admin.";
-        public const string EMAIL_ALREADY_EXISTS_STR = "Email already exists in the system, please write other email";
+        public const string EMAIL_ALREADY_EXISTS_DESC_STR = "Email already exists in the system, please write other email";
+        public const string EMAIL_ALREADY_EXISTS_STR = "Email already exists.";
         public const string FAILED_EDIT_STR = "Failed to edit user properties.";
         public const string FAILED_EDIT_DESC_STR = "Failed edit via database problem. Please contact Admin.";
         public const string FAILED_RETRIEVING_USER_STR = "Failed to retrieve user by email: ";
         public const string FAILED_RETRIEVING_USER_DESC_STR = "Failed to retrieve user by email via database problem. Please contact Admin.";
-        public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error.";
+        public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error. Please contant Admin";
         public const string LOGOUT_FAILED_STR = "Logout failed";
         public const string PRODUCT_NOT_FOUND_STR = "Product not found";
         public const string PRODUCT_ALREADY_EXISTS_STR = "Product already exists";
         public const string PRODUCT_ALREADY_EXISTS_DESC_STR = "Product already exists in the system, please write other product name";
         public const string CONCURRENCY_ERROR_STR = "Concurrency error";
-        public const string CONCURRENCY_ERROR_DESC_STR = "Please try again or contact Admin. ";
+        public const string CONCURRENCY_ERROR_DESC_STR = "Please try again or contact Admin.";
+        public const string JWT_INVALID_STR = "JWT token is invalid";
+        public const string JWT_INVALID_DESC_STR = "JWT token is invalid or expired. Please log in again.";
     }
+
 }

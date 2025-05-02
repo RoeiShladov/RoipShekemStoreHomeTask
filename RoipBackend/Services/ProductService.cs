@@ -9,10 +9,9 @@ namespace RoipBackend.Services
     
     public class ProductService : IProductService
     {
+        //TODO: Add Loggers to all functions
         private readonly AppDbContext _DBcontext;
         private readonly LoggerService _loggerService;
-
-        //TODO: Add loggers to this class
 
         public ProductService(AppDbContext context, LoggerService loggerService)
         {
@@ -21,18 +20,14 @@ namespace RoipBackend.Services
             _DBcontext.Database.SetCommandTimeout(Consts.DB_REQUEST_TIMEOUT);
         }
 
-        public async Task<IActionResult> GetAllProductsAsync()//int pageNumber, int pageSize)
+        public async Task<IActionResult> GetAllProductsAsync(int pageNumber, int pageSize)
         {
-            // Add pagination to this function.
             try
             {
-                //var result = await  _DBcontext.Products
-                //    .Skip((pageNumber - 1) * pageSize)
-                //    .Take(pageSize)
-                //    .ToListAsync()
-                //);
-
-                var result = await _DBcontext.Products.ToListAsync();
+                var result = await _DBcontext.Products
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToListAsync();
 
                 if (result != null && result.Count > 0)
                 {
@@ -43,10 +38,10 @@ namespace RoipBackend.Services
                     };
                 }
                 else
-                {                    
+                {
                     return new NotFoundObjectResult(new { Message = Consts.NO_PRODUCTS_FOUND_STR, Error = Consts.NO_PRODUCTS_FOUND_DESC_STR });
                 }
-            }           
+            }
             catch (OperationCanceledException e)
             {
                 //await _loggerService.LogErrorAsync(e.Message, Consts.DATABASE_CONNECTION_TIMEOUT_STR);
@@ -59,10 +54,12 @@ namespace RoipBackend.Services
             catch (Exception e)
             {
                 //await _loggerService.LogErrorAsync(e.Message, Consts.FAILED_RETRIEVING_USERS);
-                return new BadRequestObjectResult(new { Message = Consts.FAILED_RETRIEVING_PRODUCTS_STR, Error = Consts.FAILED_RETRIEVING_PRODUCTS_DESC_STR });
+                return new ObjectResult(new { Message = Consts.FAILED_RETRIEVING_PRODUCTS_DESC_STR, Error = Consts.INTERNAL_SERVER_ERROR_STR })
+                {
+                    StatusCode = Consts.INTERNAL_SERVER_ERROR_NUMBER
+                };
             }
         }
-
         public async Task<IActionResult> AddProductAsync(Product newProduct)
         {
             try
@@ -81,14 +78,14 @@ namespace RoipBackend.Services
                 }
 
                 // Add the new product and save changes, handle concurrency
-                _DBcontext.Products.Add(newProduct);                               
+                _DBcontext.Products.Add(newProduct);
                 await _DBcontext.SaveChangesAsync();
 
                 return new OkObjectResult(new { Message = Consts.PRODUCT_SUCCESSFULLY_ADDED_STR })
                 {
                     StatusCode = StatusCodes.Status200OK
                 };
-            }            
+            }
             catch (DbUpdateException)
             {
                 return new ConflictObjectResult(new
@@ -109,12 +106,11 @@ namespace RoipBackend.Services
                 };
             }
             catch (Exception)
-            {
-                return new BadRequestObjectResult(new
+            {               
+                return new ObjectResult(new { Message = Consts.FAILED_ADDING_PRODUCT_DESC_STR, Error = Consts.INTERNAL_SERVER_ERROR_STR })
                 {
-                    Message = Consts.FAILED_ADDING_PRODUCT_STR,
-                    Error = Consts.FAILED_ADDING_PRODUCT_DESC_STR
-                });
+                    StatusCode = Consts.INTERNAL_SERVER_ERROR_NUMBER
+                };
             }
         }
 
@@ -169,7 +165,10 @@ namespace RoipBackend.Services
             }
             catch (Exception)
             {
-                return new BadRequestObjectResult(new { Message = Consts.FAILED_DELETING_PRODUCT_STR, Error = Consts.FAILED_DELETING_PRODUCT_DESC_STR });
+                return new ObjectResult(new { Message = Consts.FAILED_DELETING_PRODUCT_DESC_STR, Error = Consts.INTERNAL_SERVER_ERROR_STR })
+                {
+                    StatusCode = Consts.INTERNAL_SERVER_ERROR_NUMBER
+                };
             }
         }
 
@@ -250,7 +249,10 @@ namespace RoipBackend.Services
             catch (Exception e)
             {
                 await transaction.RollbackAsync();
-                return new BadRequestObjectResult(new { Message = Consts.FAILED_UPDATE_PRODUCT_STR, Error = Consts.FAILED_UPDATE_PRODUCT_DESC_STR });
+                return new ObjectResult(new { Message = Consts.FAILED_UPDATE_PRODUCT_DESC_STR, Error = Consts.INTERNAL_SERVER_ERROR_STR })
+                {
+                    StatusCode = Consts.INTERNAL_SERVER_ERROR_NUMBER
+                };
             }
         }
 
@@ -318,11 +320,10 @@ namespace RoipBackend.Services
             }
             catch (Exception e)
             {
-                return new BadRequestObjectResult(new
+                return new ObjectResult(new { Message = Consts.FAILED_RETRIEVING_PRODUCTS_DESC_STR, Error = Consts.INTERNAL_SERVER_ERROR_STR })
                 {
-                    Message = Consts.FAILED_RETRIEVING_PRODUCTS_STR,
-                    Error = Consts.FAILED_RETRIEVING_PRODUCTS_DESC_STR
-                });
+                    StatusCode = Consts.INTERNAL_SERVER_ERROR_NUMBER
+                };                
             }
         }
     }    
