@@ -17,6 +17,7 @@ namespace RoipBackend
         public const int PRODUCT_MIN_VALUE = 1;
         public const int DB_REQUEST_TIMEOUT = 30; // 30 seconds
         public const int QUANTITY_MINIMUM_VALUE = 0;
+        public const string ID_REQUIRED_STR = "Connection(session) ID is required.";
         public const string IMAGE_URL_VALIDATION_STR = "Image URL must be a valid URL.";
         public const string INSUFFICIENT_QUANTITY_STR = "Insufficient quantity available.";
         public const string FAILED_UPDATE_PRODUCT_STR = "Failed to update product in the database.";
@@ -95,6 +96,7 @@ namespace RoipBackend
         public const string FAILED_RETRIEVING_USER_DESC_STR = "Failed to retrieve user by email via database problem. Please contact Admin.";
         public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error. Please contant Admin";
         public const string LOGOUT_FAILED_STR = "Logout failed";
+        public const string LOGOUT_FAILED_DESC_STR = "Logout failed. Please try again or contact Admin.";
         public const string PRODUCT_NOT_FOUND_STR = "Product not found";
         public const string PRODUCT_ALREADY_EXISTS_STR = "Product already exists";
         public const string PRODUCT_ALREADY_EXISTS_DESC_STR = "Product already exists in the system, please write other product name";

@@ -5,8 +5,7 @@ using RoipBackend.Interfaces;
 using Microsoft.VisualStudio.OLE.Interop;
 
 namespace RoipBackend.Services
-{
-    
+{    
     public class ProductService : IProductService
     {
         //TODO: Add Loggers to all functions
@@ -255,7 +254,6 @@ namespace RoipBackend.Services
                 };
             }
         }
-
 
         public async Task<IActionResult> SearchFilterAsync(string filterText, int? minPrice = null, int? maxPrice = null)
         {

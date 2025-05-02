@@ -5,10 +5,10 @@ namespace RoipBackend.Interfaces
 {
     public interface IUserConnectionService
     {
-        Task<IActionResult> AddConnectionAsync(UserConnection connection);
-        Task<IActionResult> RemoveConnectionAsync(string connectionId);
-        Task<IActionResult> GetActiveConnectionsAsync();
+        void AddConnectionAsync(UserConnection connection);
+        void RemoveConnectionAsync(UserConnection connection);
 
-        //Task<IActionResult> GetConnectionByEmailAsync(int email);
+        //For future thought, if we want to store the connections in a database.
+        //List<UserConnection> GetActiveConnections();
     }
 }

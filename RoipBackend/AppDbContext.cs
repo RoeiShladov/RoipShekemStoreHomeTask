@@ -9,7 +9,9 @@ namespace RoipBackend
 
         public DbSet<Product> Products { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<UserConnection> UserConnection { get; set; }
+
+        //Usage in the future only if the system will need to store the connection of the users in the database
+        //public DbSet<UserConnection> UserConnection { get; set; }
         public DbSet<Logger> Logger { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

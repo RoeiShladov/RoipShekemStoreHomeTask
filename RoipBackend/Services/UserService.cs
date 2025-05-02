@@ -14,12 +14,12 @@ namespace RoipBackend.Services
         private readonly LoggerService _loggerService;
         private readonly JwtHelper _jwtHelper;
 
-        public UserService(AppDbContext context, LoggerService loggerService, JwtHelper User_JWT)
+        public UserService(AppDbContext context, LoggerService loggerService, JwtHelper jwtHelper)
         {
             _DBcontext = context;
             _loggerService = loggerService;
             _DBcontext.Database.SetCommandTimeout(Consts.DB_REQUEST_TIMEOUT);
-            _jwtHelper = User_JWT;
+            _jwtHelper = jwtHelper;
         }
 
         public async Task<IActionResult> GetAllUsersAsync(int pageNumber, int pageSize)

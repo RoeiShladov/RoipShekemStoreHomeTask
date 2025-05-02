@@ -25,6 +25,7 @@ namespace RoipBackend.Controllers
             _jwtHelper = jwtHelper;
         }
 
+
         [HttpGet("get-all-products")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> GetAllProductsAsync(string jwt, int pageNumber, int pageSize)
@@ -34,6 +35,7 @@ namespace RoipBackend.Controllers
                 return await _productService.GetAllProductsAsync(pageNumber, pageSize);
             return jwt_ValidationResult;
         }
+
 
         [HttpPost("add-product")]
         [Authorize(Roles = "Admin,Customer")]
@@ -49,6 +51,7 @@ namespace RoipBackend.Controllers
             return await _productService.AddProductAsync(product);
         }
 
+
         [HttpPut("buy-product/{productName}")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> BuyProductAsync(string jwt, string productName, int quantity)
@@ -62,6 +65,7 @@ namespace RoipBackend.Controllers
 
             return await _productService.BuyProductAsync(productName, quantity);
         }
+
 
         [HttpDelete("delete-product/{productName}")]
         [Authorize(Roles = "Admin")]
@@ -77,12 +81,14 @@ namespace RoipBackend.Controllers
             return await _productService.DeleteProductAsync(productName);
         }
 
+
         [HttpGet("search-filter")]
         [Authorize(Roles = "Admin,Customer")]
         public async Task<IActionResult> SearchFilterAsync(string filterText)
         {
             return await _productService.SearchFilterAsync(filterText);
         }
+
 
         private BadRequestObjectResult ModelStateError(string message)
         {
