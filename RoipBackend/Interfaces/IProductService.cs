@@ -1,17 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using RoipBackend.Models;
+using RoipBackend.Utilities;
 
 namespace RoipBackend.Interfaces
 {
     public interface IProductService
     {
-        Task<IActionResult> GetAllProductsAsync(int pageNumber, int pageSize);
-        Task<IActionResult> AddProductAsync(Product newProduct);        
+        Task<ServiceResult<List<Product>>> GetAllProductsAsync(string jwt, int pageNumber, int pageSize);
+        Task<ServiceResult<string>> AddProductAsync(string jwt, Product newProduct);
 
-        Task<IActionResult> BuyProductAsync(string productName, int quantity);
-        Task<IActionResult> DeleteProductAsync(string productName);
+        Task<ServiceResult<Product>> DeleteProductAsync(string jwt, string productName);
 
-        Task<IActionResult> SearchFilterAsync(string filterText, int? minPrice = null, int? maxPrice = null);
+        Task<ServiceResult<Product>> BuyProductAsync(string jwt, string productName, int quantity);
+
+        Task<ServiceResult<List<Product>>> SearchProductAsync(string jwt, string filterText, int? minPrice = null, int? maxPrice = null);
 
     }
 }

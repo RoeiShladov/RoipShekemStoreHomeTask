@@ -1,106 +1,198 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using RoipBackend.Interfaces;
 using RoipBackend.Models;
 using RoipBackend.Services;
 using RoipBackend.Utilities;
+using System.ComponentModel.DataAnnotations;
 
 namespace RoipBackend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/products")]
     public class ProductsController : ControllerBase
     {
-        //TODO: Add Loggers to all functions
-        private readonly IConfiguration _configuration;
         private readonly ProductService _productService;
         private readonly LoggerService _loggerService;
-        private readonly JwtHelper _jwtHelper;
 
-        public ProductsController(IConfiguration configuration, ProductService productService, LoggerService loggerService, JwtHelper jwtHelper)
+        public ProductsController(ProductService productService, LoggerService loggerService)
         {
-            _configuration = configuration;
             _productService = productService;
             _loggerService = loggerService;
-            _jwtHelper = jwtHelper;
         }
 
 
-        [HttpGet("get-all-products")]
-        [Authorize(Roles = "Admin,Customer")]
-        public async Task<IActionResult> GetAllProductsAsync(string jwt, int pageNumber, int pageSize)
+        [HttpGet(C.GET_ALL_PRODUCTS_API_STR)]
+        [Authorize(Roles = $"{C.ADMIN_STR},{C.CUSTOMER_STR}")]
+        public async Task<IActionResult> GetAllProductsAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt,
+            int pageNumber,
+            int pageSize)
+        {            
+            ServiceResult<List<Product>> result = await _productService.GetAllProductsAsync(jwt, pageNumber, pageSize);
+            if (result.Success)
+            {                
+                return Ok(new
+                {
+                    result.Message,
+                    result.StatusCode,
+                    result.Data
+                });
+            }
+
+            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
+        }
+
+
+        [HttpPost(C.ADD_PRODUCT_API_STR)]
+        [Authorize(Roles = $"{C.ADMIN_STR}")]
+        public async Task<IActionResult> AddProductAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt,
+             Product product)
         {          
-            IActionResult jwt_ValidationResult = _jwtHelper.JwtCheck(jwt);
-            if (jwt_ValidationResult is OkResult)
-                return await _productService.GetAllProductsAsync(pageNumber, pageSize);
-            return jwt_ValidationResult;
-        }
-
-
-        [HttpPost("add-product")]
-        [Authorize(Roles = "Admin,Customer")]
-        public async Task<IActionResult> AddProductAsync(string jwt, Product product)
-        {
-            IActionResult jwt_ValidationResult = _jwtHelper.JwtCheck(jwt);
-            if (jwt_ValidationResult is UnauthorizedObjectResult)
-                return jwt_ValidationResult;
-
-            if (!ModelState.IsValid)                                
-                return ModelStateError(Consts.VALIDATION_FAILED_STR);
-            
-            return await _productService.AddProductAsync(product);
-        }
-
-
-        [HttpPut("buy-product/{productName}")]
-        [Authorize(Roles = "Admin,Customer")]
-        public async Task<IActionResult> BuyProductAsync(string jwt, string productName, int quantity)
-        {
-            IActionResult jwt_ValidationResult = _jwtHelper.JwtCheck(jwt);
-            if (jwt_ValidationResult is UnauthorizedObjectResult)
-                return jwt_ValidationResult;
-
             if (!ModelState.IsValid)
-                return ModelStateError(Consts.VALIDATION_FAILED_STR);
+            {
+                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                return ModelStateWarning(C.MODEL_STATE_VALIDATION_FAILED_STR);
+            }
 
-            return await _productService.BuyProductAsync(productName, quantity);
+            ServiceResult<string> result = await _productService.AddProductAsync(jwt, product);
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    result.Message,
+                    result.StatusCode,
+                    result.RoipShekemStoreJWT
+                });
+            }
+
+            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
         }
 
 
-        [HttpDelete("delete-product/{productName}")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteProductAsync(string jwt, string productName)
+        [HttpDelete(C.DELETE_PRODUCT_API_STR)]
+        [Authorize(Roles = C.ADMIN_STR)]
+        public async Task<IActionResult> DeleteProductAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt,
+            [StringLength(100, ErrorMessage = C.PRODUCT_NAME_MODEL_STATE_INVALID_STR)] string productName)
         {
-            IActionResult jwt_ValidationResult = _jwtHelper.JwtCheck(jwt);
-            if (jwt_ValidationResult is UnauthorizedObjectResult)
-                return jwt_ValidationResult;
-
             if (!ModelState.IsValid)
-                return ModelStateError(Consts.VALIDATION_FAILED_STR);
+            {
+                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                return ModelStateWarning(C.MODEL_STATE_VALIDATION_FAILED_STR);
+            }
 
-            return await _productService.DeleteProductAsync(productName);
+            var result = await _productService.DeleteProductAsync(jwt, productName);
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    result.Message,
+                    result.StatusCode,
+                    result.Data
+                });
+            }
+
+            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
         }
 
 
-        [HttpGet("search-filter")]
-        [Authorize(Roles = "Admin,Customer")]
-        public async Task<IActionResult> SearchFilterAsync(string filterText)
+        [HttpPut(C.BUY_PRODUCT_API_STR)]
+        [Authorize(Roles = $"{C.ADMIN_STR},{C.CUSTOMER_STR}")]
+        public async Task<IActionResult> BuyProductAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt,
+            [StringLength(100, ErrorMessage = C.PRODUCT_NAME_MODEL_STATE_INVALID_STR)] string productName,
+            [StringLength(10, ErrorMessage = C.PRODUCT_QUANTITY_MODEL_STATE_INVALID_STR)]  int quantity)
         {
-            return await _productService.SearchFilterAsync(filterText);
+            if (!ModelState.IsValid)
+            {
+                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                return ModelStateWarning(C.MODEL_STATE_VALIDATION_FAILED_STR);
+            }    
+
+            var result = await _productService.BuyProductAsync(jwt, productName, quantity);
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    result.Message,
+                    result.StatusCode,
+                    result.Data
+                });
+            }
+
+            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
         }
 
 
-        private BadRequestObjectResult ModelStateError(string message)
+        [HttpGet(C.SEARCH_PRODUCT_API_STR)]
+        [Authorize(Roles = $"{C.ADMIN_STR},{C.CUSTOMER_STR}")]
+        public async Task<IActionResult> SearchProductAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt,
+            [StringLength(100, ErrorMessage = C.FILTER_MODEL_STATE_INVALID_STR)] string filterText,
+            [Range(0, int.MaxValue, ErrorMessage = C.MINIMUM_PRICE_MODEL_STATE_INVALID_STR)] int minPrice,
+            [Range(0, int.MaxValue, ErrorMessage = C.MAXIMUM_PRICE_MODEL_STATE_INVALID_STR)] int maxPrice)
         {
-            var errors = ModelState.Values
+            if(!ModelState.IsValid)
+            {
+                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                return ModelStateWarning(C.MODEL_STATE_VALIDATION_FAILED_STR);
+            }
+
+            var result = await _productService.SearchProductAsync(jwt, filterText, minPrice, maxPrice);
+            if(result.Success)
+            {
+                return Ok(new
+                {
+                    result.Message,
+                    result.StatusCode,
+                    result.Data
+                });
+            }
+
+            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
+        }
+
+      
+        private BadRequestObjectResult ModelStateWarning(string message)
+        {
+            var warning = ModelState.Values
                 .SelectMany(v => v.Errors)
                 .Select(e => e.ErrorMessage)
                 .ToList();
 
-            return new BadRequestObjectResult(new { Message = message, Errors = errors })
+            return BadRequest(new { Message = message, Warning = warning, StatusCode = StatusCodes.Status400BadRequest });
+        }
+        
+        
+        private IActionResult HandleStatusCode(int statusCode, string message, string error)
+        {
+            switch (statusCode)
             {
-                StatusCode = StatusCodes.Status400BadRequest
-            };
-        }       
+                case StatusCodes.Status400BadRequest:
+                    return BadRequest(new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status401Unauthorized:
+                    return Unauthorized(new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status403Forbidden:
+                    return StatusCode(StatusCodes.Status403Forbidden, new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status404NotFound:
+                    return NotFound(new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status408RequestTimeout:
+                    return StatusCode(StatusCodes.Status408RequestTimeout, new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status409Conflict:
+                    return Conflict(new { Message = message, Error = error, StatusCode = statusCode });
+
+                case StatusCodes.Status500InternalServerError:
+                    return StatusCode(StatusCodes.Status500InternalServerError, new { Message = message, Error = error, StatusCode = statusCode });
+
+                default:
+                    return new ObjectResult(new { Message = message, Error = error, StatusCode = statusCode });
+            }
+        }
     }
 }

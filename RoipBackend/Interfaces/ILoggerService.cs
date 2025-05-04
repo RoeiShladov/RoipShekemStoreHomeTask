@@ -2,11 +2,24 @@
 {
     public interface ILoggerService
     {
-        Task LogInfoAsync(string message, string details);
-        Task LogWarningAsync(string message, string details);
-        Task LogDebugAsync(Exception message, string details);
+        Task LogInfoAsync(string friendlyDescribtion);
 
-        Task LogErrorAsync(Exception exception, string friendlyMessage);
-        Task LogFatalAsync(Exception exception, string friendlyMessage);
+        Task LogWarningAsync(string friendlyDescribtion);
+
+        //Only in production
+        Task LogTraceAsync(string friendlyDescribtion);
+
+        //Only in production
+        Task LogDebugAsync(string exception, string friendlyDescribtion);
+
+        Task LogErrorAsync(string exception, string friendlyDescribtion);
+
+        Task LogCriticalAsync(string exception, string friendlyDescribtion);
+
+        Task LogFatalAsync(string exception, string friendlyDescribtion);
+
+
+
+
     }
 }
