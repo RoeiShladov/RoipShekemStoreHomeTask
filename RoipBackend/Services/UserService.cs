@@ -2,6 +2,8 @@
 using RoipBackend.Interfaces;
 using RoipBackend.Models;
 using RoipBackend.Utilities;
+using System.Data;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace RoipBackend.Services
@@ -71,7 +73,7 @@ namespace RoipBackend.Services
                         Success = true,
                         Message = C.USERS_RETRIEVE_SUCCESS_STR,
                         StatusCode = StatusCodes.Status200OK,
-                        Data = result 
+                        Data = result
                     };
                 }
                 else
@@ -83,7 +85,7 @@ namespace RoipBackend.Services
                         Success = false,
                         Message = C.NO_USERS_FOUND_STR,
                         StatusCode = StatusCodes.Status404NotFound,
-                        Error = C.NO_USERS_FOUND_DESC_STR                        
+                        Error = C.NO_USERS_FOUND_DESC_STR
                     };
                 }
             }
@@ -102,7 +104,7 @@ namespace RoipBackend.Services
             catch (Exception e)
             {
                 string friendlyDescribtion = $"{C.FAILED_RETRIEVING_USERS_STR}. {C.FAILED_RETRIEVING_USERS_DESC_STR}";
-                await _loggerService.LogErrorAsync(e.Message, friendlyDescribtion);                
+                await _loggerService.LogErrorAsync(e.Message, friendlyDescribtion);
                 return new ServiceResult<List<User>>
                 {
                     Success = false,
@@ -110,13 +112,13 @@ namespace RoipBackend.Services
                     StatusCode = StatusCodes.Status500InternalServerError,
                     Error = C.INTERNAL_SERVER_ERROR_STR
                 };
-            }         
+            }
         }
 
         public async Task<ServiceResult<string>> RegisterUserAsync(User user)
         {
             try
-            {               
+            {
                 var existingUser = await _DBcontext.Users
                                 .FirstOrDefaultAsync(u => u.Email == user.Email || u.Id == user.Id);
 
@@ -130,7 +132,7 @@ namespace RoipBackend.Services
                         Message = C.EMAIL_ALREADY_EXISTS_STR,
                         StatusCode = StatusCodes.Status409Conflict,
                         Error = C.EMAIL_ALREADY_EXISTS_DESC_STR
-                    };                    
+                    };
                 }
 
                 // Hashing the password, and adding the user to the database
@@ -144,8 +146,8 @@ namespace RoipBackend.Services
                     Success = true,
                     Message = C.USER_REGISTERED_SUCCESSFULLY_STR,
                     StatusCode = StatusCodes.Status200OK,
-                };              
-            }            
+                };
+            }
             catch (DbUpdateException e)
             {
                 string friendlyDescribtion = $"{C.DATABASE_UPDATE_ERROR_STR}. {C.DATABASE_UPDATE_ERROR_DESC_STR}";
@@ -156,7 +158,7 @@ namespace RoipBackend.Services
                     Message = C.DATABASE_UPDATE_ERROR_STR,
                     StatusCode = StatusCodes.Status409Conflict,
                     Error = C.DATABASE_UPDATE_ERROR_DESC_STR
-                };               
+                };
             }
             catch (OperationCanceledException e)
             {
@@ -168,7 +170,7 @@ namespace RoipBackend.Services
                     Message = C.REQUEST_TIME_OUT_STR,
                     StatusCode = StatusCodes.Status408RequestTimeout,
                     Error = C.DATABASE_CONNECTION_TIMEOUT_STR
-                };            
+                };
             }
             catch (Exception e)
             {
@@ -180,8 +182,8 @@ namespace RoipBackend.Services
                     Message = C.REGISTRATION_FAILED_DESC_STR,
                     StatusCode = StatusCodes.Status500InternalServerError,
                     Error = C.INTERNAL_SERVER_ERROR_STR
-                };               
-            }          
+                };
+            }
         }
 
         public async Task<ServiceResult<User>> LogInAsync(string email, string password)
@@ -199,7 +201,7 @@ namespace RoipBackend.Services
                         Message = C.NO_EMAIL_FOUND_STR,
                         StatusCode = StatusCodes.Status404NotFound,
                         Error = error,
-                    };                    
+                    };
                 }
 
                 if (!VerifyPassword(password, user.Password))
@@ -210,13 +212,13 @@ namespace RoipBackend.Services
                         Success = false,
                         Message = C.WRONG_PASSWORD_STR,
                         StatusCode = StatusCodes.Status401Unauthorized,
-                        Error = C.WRONG_PASSWORD_DESC_STR,                        
-                    };                                        
+                        Error = C.WRONG_PASSWORD_DESC_STR,
+                    };
                 }
 
                 //User is found and password is correct, Generate JWT token and return it to the user
                 string newJwt = await _jwtAuthService.GenerateJWT(user.Id, user.Username, user.Email, user.Role, C.JWT_EXPIRATION_TIME);
-                if(string.IsNullOrEmpty(newJwt))
+                if (string.IsNullOrEmpty(newJwt))
                 {
                     string friendlyDescribtion = $"{C.JWT_GENERATION_FAILED_STR}. {C.JWT_GENERATION_FAILED_DESC_STR}";
                     await _loggerService.LogErrorAsync(string.Empty, C.JWT_GENERATION_FAILED_STR);
@@ -236,8 +238,8 @@ namespace RoipBackend.Services
                     Message = C.USER_LOGGED_IN_SUCCESSFULLY_STR,
                     StatusCode = StatusCodes.Status200OK,
                     RoipShekemStoreJWT = newJwt,
-                    Data = user                   
-                };               
+                    Data = user
+                };
             }
             catch (OperationCanceledException e)
             {
@@ -248,8 +250,8 @@ namespace RoipBackend.Services
                     Success = false,
                     Message = C.REQUEST_TIME_OUT_STR,
                     Error = C.DATABASE_CONNECTION_TIMEOUT_STR,
-                    StatusCode = StatusCodes.Status408RequestTimeout,                    
-                };               
+                    StatusCode = StatusCodes.Status408RequestTimeout,
+                };
             }
             catch (Exception e)
             {
@@ -260,8 +262,8 @@ namespace RoipBackend.Services
                     Message = C.FAILED_LOGIN_DESC_STR,
                     Error = C.INTERNAL_SERVER_ERROR_STR,
                     StatusCode = StatusCodes.Status500InternalServerError,
-                };               
-            }           
+                };
+            }
         }
 
         public ServiceResult<string> Logout(User user)
@@ -285,5 +287,55 @@ namespace RoipBackend.Services
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
         }
 
+        public async Task<ServiceResult<AuthenticatedUserDTO>> GetJWTUserResolverAsync(string jwt)
+        {
+            try
+            {
+                var claimsPrincipal = await _jwtAuthService.GetJwtClaims(jwt);
+
+                if (claimsPrincipal == null)
+                {
+                    string friendlyDescribtion = $"{C.JWT_INVALID_STR}. {C.JWT_INVALID_DESC_STR}";
+                    await _loggerService.LogErrorAsync(string.Empty, friendlyDescribtion);
+                    return new ServiceResult<AuthenticatedUserDTO>
+                    {
+                        Success = false,
+                        Message = C.JWT_INVALID_STR,
+                        StatusCode = StatusCodes.Status401Unauthorized,
+                        Error = C.JWT_INVALID_DESC_STR
+                    };
+                }
+
+                var nameClaim = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                var emailClaim = claimsPrincipal.FindFirst(ClaimTypes.Email)?.Value;
+                var roleClaim = claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value;
+                AuthenticatedUserDTO dTO = new AuthenticatedUserDTO
+                {
+                    Username = nameClaim,
+                    Email = emailClaim,
+                    Role = roleClaim
+                };
+
+                return new ServiceResult<AuthenticatedUserDTO>
+                {
+                    Success = true,
+                    Message = C.JWT_DETAILS_RETRIEVED_SUCCESSFULLY_STR,
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = dTO
+                };
+            }
+            catch (Exception e)
+            {
+                string friendlyDescribtion = $"{C.JWT_CONTENT_CHECK_FAILED_STR}. {C.JWT_CONTENT_CHECK_FAILED_DESC_STR}";
+                await _loggerService.LogErrorAsync(e.Message, friendlyDescribtion);
+                return new ServiceResult<AuthenticatedUserDTO>
+                {
+                    Success = false,
+                    Message = C.JWT_CONTENT_CHECK_FAILED_STR,
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Error = C.INTERNAL_SERVER_ERROR_STR
+                };
+            }
+        }
     }
 }

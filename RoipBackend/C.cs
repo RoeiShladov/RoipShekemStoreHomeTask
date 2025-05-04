@@ -16,6 +16,9 @@ namespace RoipBackend
         public const string JWT_GENERATED_SUCCESSFULLY_STR = "JWT token generated successfully.";
         public const string JWT_GENERATION_FAILED_STR = "Failed to generate JWT token.";
         public const string JWT_GENERATION_FAILED_DESC_STR = "Failed to generate JWT token due to system problem. Please try again to login";
+        public const string JWT_DETAILS_RETRIEVED_SUCCESSFULLY_STR = "JWT token details retrieved successfully.";
+        public const string JWT_CONTENT_CHECK_FAILED_STR = "JWT token content check failed.";
+        public const string JWT_CONTENT_CHECK_FAILED_DESC_STR = "JWT token content check failed. Please try again to login";
 
         // ID Ranges
         public const int ID_MINIMUM_RANGE = 1;

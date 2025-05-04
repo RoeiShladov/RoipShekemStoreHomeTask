@@ -16,5 +16,8 @@ namespace RoipBackend.Interfaces
 
         ServiceResult<string> Logout(User user);
 
+        Task<ServiceResult<AuthenticatedUserDTO>> GetJWTUserResolverAsync(string jwt);
+
+
     }
 }

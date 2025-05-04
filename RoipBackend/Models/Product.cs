@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoipBackend.Models
 {   
-    [Index(nameof(ProductName), IsUnique = true)]
+    [Microsoft.EntityFrameworkCore.Index(nameof(ProductName), IsUnique = true)]
     public class Product
     {
         [Required]

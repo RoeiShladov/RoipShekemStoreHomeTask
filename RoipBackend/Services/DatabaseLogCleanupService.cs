@@ -6,7 +6,7 @@ using System;
 using System.Data.Entity;
 using System.Runtime.CompilerServices;
 
-public class DatabaseLogCleanupService : IDisposable
+public class DatabaseLogCleanupService : IDisposable, IHostedService
 {
     private readonly AppDbContext _DBcontext;
     private Timer _timer;
@@ -16,7 +16,7 @@ public class DatabaseLogCleanupService : IDisposable
         _DBcontext = dbContext;
     }
 
-    public Task StartAsync()
+    public Task StartAsync(CancellationToken cancellationToken)
     {
         _timer = new Timer(CleanDatabaseLogs, null, 0, (int)TimeSpan.FromDays(C.DATABASE_LOGS_CLEANUP_INTERVAL).TotalMilliseconds);
         return Task.CompletedTask;
@@ -41,7 +41,7 @@ public class DatabaseLogCleanupService : IDisposable
         });
     }
 
-    public async Task StopAsync()
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
         try
         {   // Dispose the timer to stop the periodic task

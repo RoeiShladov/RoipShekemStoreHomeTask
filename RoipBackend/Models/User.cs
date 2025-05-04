@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace RoipBackend.Models
 {
-    [Index(nameof(Email), IsUnique = true)]
+    [Microsoft.EntityFrameworkCore.Index(nameof(Email), IsUnique = true)]
     public class User
     {
         [Required]

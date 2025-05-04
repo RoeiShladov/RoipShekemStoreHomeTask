@@ -25,6 +25,31 @@ namespace RoipBackend.Controllers
 
         [HttpGet(C.HEALTH_CHECK_API_STR)]
         [AllowAnonymous]
+        public async Task<IActionResult> GetJWTUserDetailsAsync(
+            [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt)
+        {
+            if (!ModelState.IsValid)
+            {
+                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                return ModelStateError(C.MODEL_STATE_VALIDATION_FAILED_STR);
+            }
+
+            ServiceResult<AuthenticatedUserDTO> result = await _userService.GetJWTUserResolverAsync(jwt);
+            if (result.Success)
+            {
+                return Ok(new
+                {
+                    result.Success,                   
+                    result.StatusCode,
+                    result.Data
+                });
+            }
+
+            return new ObjectResult(new { Message = result.Message, Error = result.Error, StatusCode = result.StatusCode });
+        }
+
+        [HttpGet(C.HEALTH_CHECK_API_STR)]
+        [AllowAnonymous]
         public async Task<IActionResult> GetHealthCheckAsync()
         {
             ServiceResult<string> result = _userService.GetHealthCheck();
@@ -38,7 +63,7 @@ namespace RoipBackend.Controllers
             }
 
             await _loggerService.LogFatalAsync(string.Empty, C.HEALTH_CHECK_FAILED_STR);
-            return new ObjectResult(new { Message = result.Message,Error = result.Error, StatusCode = result.StatusCode });
+            return new ObjectResult(new { Message = result.Message, Error = result.Error, StatusCode = result.StatusCode });
         }
 
 
@@ -91,30 +116,30 @@ namespace RoipBackend.Controllers
         [HttpPost(C.LOGIN_API_STR)]
         [AllowAnonymous]
         public async Task<IActionResult> LogInAsync(
-        [StringLength(100, ErrorMessage = C.USER_EMAIL_MODEL_STATE_INVALID_STR)] string email,
-        [StringLength(16, ErrorMessage = C.USER_PASSWORD_MODEL_STATE_INVALID_STR)] string password)
-        {
-            if (!ModelState.IsValid)
+            [StringLength(100, ErrorMessage = C.USER_EMAIL_MODEL_STATE_INVALID_STR)] string email,
+            [StringLength(16, ErrorMessage = C.USER_PASSWORD_MODEL_STATE_INVALID_STR)] string password)
             {
-                await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
-                return ModelStateError(C.MODEL_STATE_VALIDATION_FAILED_STR);
-            }
-
-            ServiceResult<User> result = await _userService.LogInAsync(email, password);
-
-            if (result.Success)
-            {                
-                return Ok(new
+                if (!ModelState.IsValid)
                 {
-                    result.Message,
-                    result.StatusCode,
-                    result.Data,
-                    result.RoipShekemStoreJWT
-                });
-            }
+                    await _loggerService.LogWarningAsync(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                    return ModelStateError(C.MODEL_STATE_VALIDATION_FAILED_STR);
+                }
 
-            return HandleStatusCode(result.StatusCode, result.Message, result.Error);
-        }
+                ServiceResult<User> result = await _userService.LogInAsync(email, password);
+
+                if (result.Success)
+                {                
+                    return Ok(new
+                    {
+                        result.Message,
+                        result.StatusCode,
+                        result.Data,
+                        result.RoipShekemStoreJWT
+                    });
+                }
+
+                return HandleStatusCode(result.StatusCode, result.Message, result.Error);
+            }
 
 
         [HttpPost(C.LOGOUT_API_STR)]
