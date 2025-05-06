@@ -1,0 +1,8 @@
+// user-info-bar.component.html
+<div class="user-info-bar" *ngIf="user">
+  <span class="greeting">Hello, {{ user.name }}</span>
+  <span class="separator"> | </span>
+  <span class="email">Email: {{ user.email }}</span>
+  <span class="separator"> | </span>
+  <span class="role">Role: {{ user.role }}</span>
+</div>

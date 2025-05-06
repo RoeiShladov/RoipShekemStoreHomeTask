@@ -1,0 +1,94 @@
+<mat-card class="product-card">  
+ <mat-card-header>  
+   <mat-card-title>  
+     <h2>Product List</h2>  
+   </mat-card-title>  
+ </mat-card-header>  
+ <mat-card-content>  
+   <div class="action-bar">
+     <mat-form-field appearance="outline" class="search-field">
+       <mat-label>Search products...</mat-label>
+       <app-searchfilter [searchTerm]="searchTerm" (searchChange)="onSearchChange($event)"></app-searchfilter>
+     </mat-form-field>
+
+     <mat-form-field appearance="outline" class="price-field">
+       <mat-label>Min Price</mat-label>
+       <input matInput type="number" [(ngModel)]="minPrice" (input)="onPriceChange()">
+     </mat-form-field>
+
+     <mat-form-field appearance="outline" class="price-field">
+       <mat-label>Max Price</mat-label>
+       <input matInput type="number" [(ngModel)]="maxPrice" (input)="onPriceChange()">
+     </mat-form-field>
+     <div *ngIf="isAdmin" class="add-product-button">
+       <button mat-raised-button color="primary" (click)="addNavigateNewPage()">Add Product</button>
+     </div>
+     <div *ngIf="isAdmin" class="remove-product-button" ">
+       <button *ngIf="isAdmin" mat-icon-button color="warn" (click)="removeNavigateNewPage()">Delete Product</button>
+     </div>
+     <div *ngIf="isAdmin" class="users-live-status-button" ">
+       <button *ngIf="isAdmin" mat-icon-button color="warn" (click)="liveStatusNavigatePage()">View Live Users Status</button>
+     </div>
+
+
+   </div>  
+   </div>  
+   <br />  
+   <div class="table-container">  
+     <table mat-table [dataSource]="products" class="product-table">  
+
+           <ng-container matColumnDef="productName">  
+             <th mat-header-cell *matHeaderCellDef>Product Name</th>  
+             <td mat-cell *matCellDef="let row">{{ row.productName }}</td>  
+           </ng-container>  
+
+           <ng-container matColumnDef="description">  
+             <th mat-header-cell *matHeaderCellDef>Description</th>  
+             <td mat-cell *matCellDef="let row">{{ row.description }}</td>  
+           </ng-container>  
+
+           <ng-container matColumnDef="price">  
+             <th mat-header-cell *matHeaderCellDef>Price</th>  
+             <td mat-cell *matCellDef="let row">{{ row.price }}</td>  
+           </ng-container>  
+
+           <ng-container matColumnDef="quantity">  
+             <th mat-header-cell *matHeaderCellDef>Quantity</th>  
+             <td mat-cell *matCellDef="let row">  
+                <mat-form-field appearance="fill" class="quantity-combobox">  
+                  <mat-label>Quantity</mat-label>  
+                  <mat-select [(value)]="row.selectedQuantity">  
+                    <mat-option *ngFor="let qty of quantityOptions" [value]="qty" *ngIf="qty >= 0 && qty <= 10">{{ qty }}</mat-option>  
+                  </mat-select>  
+                </mat-form-field>  
+              </td>
+           </ng-container>  
+
+           <ng-container matColumnDef="imageUrl">  
+             <th mat-header-cell *matHeaderCellDef>Image</th>  
+             <td mat-cell *matCellDef="let row">  
+               <img [src]="row.imageUrl" alt="Product Image" class="product-image">  
+             </td>  
+           </ng-container>  
+
+           <ng-container matColumnDef="actions">  
+             <th mat-header-cell *matHeaderCellDef>Actions</th>  
+             <td mat-cell *matCellDef="let row">  
+               <button mat-icon-button color="primary" (click)="buyProduct(row.productName)"  
+                       title="Buy Product">  
+                 <mat-icon>shopping_cart</mat-icon>  
+               </button>                 
+                 <mat-icon>delete</mat-icon>  
+               </button>  
+             </td>  
+           </ng-container>  
+
+           <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>  
+           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>  
+         </table>
+   </div>  
+
+   <mat-paginator [length]="totalProducts" [pageSize]="pageSize" (page)="onPageChange($event)"  
+                  class="paginator"></mat-paginator>  
+ </mat-card-content>  
+</mat-card>

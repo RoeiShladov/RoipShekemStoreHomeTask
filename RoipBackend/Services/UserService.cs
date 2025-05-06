@@ -22,6 +22,57 @@ namespace RoipBackend.Services
             _DBcontext.Database.SetCommandTimeout(C.DB_REQUEST_TIMEOUT);
         }
 
+        public async Task<ServiceResult<AuthenticatedUserDTO>> GetJWTUserResolverAsync(string jwt)
+        {
+            try
+            {
+                var claimsPrincipal = await _jwtAuthService.GetJwtClaims(jwt);
+
+                if (claimsPrincipal == null)
+                {
+                    string friendlyDescribtion = $"{C.JWT_INVALID_STR}. {C.JWT_INVALID_DESC_STR}";
+                    await _loggerService.LogErrorAsync(string.Empty, friendlyDescribtion);
+                    return new ServiceResult<AuthenticatedUserDTO>
+                    {
+                        Success = false,
+                        Message = C.JWT_INVALID_STR,
+                        StatusCode = StatusCodes.Status401Unauthorized,
+                        Error = C.JWT_INVALID_DESC_STR
+                    };
+                }
+
+                var nameClaim = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
+                var emailClaim = claimsPrincipal.FindFirst(ClaimTypes.Email)?.Value;
+                var roleClaim = claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value;
+                AuthenticatedUserDTO dTO = new AuthenticatedUserDTO
+                {
+                    Username = nameClaim,
+                    Email = emailClaim,
+                    Role = roleClaim
+                };
+
+                return new ServiceResult<AuthenticatedUserDTO>
+                {
+                    Success = true,
+                    Message = C.JWT_DETAILS_RETRIEVED_SUCCESSFULLY_STR,
+                    StatusCode = StatusCodes.Status200OK,
+                    Data = dTO
+                };
+            }
+            catch (Exception e)
+            {
+                string friendlyDescribtion = $"{C.JWT_CONTENT_CHECK_FAILED_STR}. {C.JWT_CONTENT_CHECK_FAILED_DESC_STR}";
+                await _loggerService.LogErrorAsync(e.Message, friendlyDescribtion);
+                return new ServiceResult<AuthenticatedUserDTO>
+                {
+                    Success = false,
+                    Message = C.JWT_CONTENT_CHECK_FAILED_STR,
+                    StatusCode = StatusCodes.Status500InternalServerError,
+                    Error = C.INTERNAL_SERVER_ERROR_STR
+                };
+            }
+        }
+
         public ServiceResult<string> GetHealthCheck()
         {
             return new ServiceResult<string>
@@ -204,6 +255,7 @@ namespace RoipBackend.Services
                     };
                 }
 
+                //Comparing the password with the hashed password in the database
                 if (!VerifyPassword(password, user.Password))
                 {
                     await _loggerService.LogWarningAsync($"{C.LOGIN_PASSWORD_FAILED_STR} {email}");
@@ -285,57 +337,6 @@ namespace RoipBackend.Services
         public bool VerifyPassword(string password, string hashedPassword)
         {
             return BCrypt.Net.BCrypt.Verify(password, hashedPassword);
-        }
-
-        public async Task<ServiceResult<AuthenticatedUserDTO>> GetJWTUserResolverAsync(string jwt)
-        {
-            try
-            {
-                var claimsPrincipal = await _jwtAuthService.GetJwtClaims(jwt);
-
-                if (claimsPrincipal == null)
-                {
-                    string friendlyDescribtion = $"{C.JWT_INVALID_STR}. {C.JWT_INVALID_DESC_STR}";
-                    await _loggerService.LogErrorAsync(string.Empty, friendlyDescribtion);
-                    return new ServiceResult<AuthenticatedUserDTO>
-                    {
-                        Success = false,
-                        Message = C.JWT_INVALID_STR,
-                        StatusCode = StatusCodes.Status401Unauthorized,
-                        Error = C.JWT_INVALID_DESC_STR
-                    };
-                }
-
-                var nameClaim = claimsPrincipal.FindFirst(ClaimTypes.Name)?.Value;
-                var emailClaim = claimsPrincipal.FindFirst(ClaimTypes.Email)?.Value;
-                var roleClaim = claimsPrincipal.FindFirst(ClaimTypes.Role)?.Value;
-                AuthenticatedUserDTO dTO = new AuthenticatedUserDTO
-                {
-                    Username = nameClaim,
-                    Email = emailClaim,
-                    Role = roleClaim
-                };
-
-                return new ServiceResult<AuthenticatedUserDTO>
-                {
-                    Success = true,
-                    Message = C.JWT_DETAILS_RETRIEVED_SUCCESSFULLY_STR,
-                    StatusCode = StatusCodes.Status200OK,
-                    Data = dTO
-                };
-            }
-            catch (Exception e)
-            {
-                string friendlyDescribtion = $"{C.JWT_CONTENT_CHECK_FAILED_STR}. {C.JWT_CONTENT_CHECK_FAILED_DESC_STR}";
-                await _loggerService.LogErrorAsync(e.Message, friendlyDescribtion);
-                return new ServiceResult<AuthenticatedUserDTO>
-                {
-                    Success = false,
-                    Message = C.JWT_CONTENT_CHECK_FAILED_STR,
-                    StatusCode = StatusCodes.Status500InternalServerError,
-                    Error = C.INTERNAL_SERVER_ERROR_STR
-                };
-            }
-        }
+        }        
     }
 }

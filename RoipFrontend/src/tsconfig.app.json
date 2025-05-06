@@ -1,0 +1,19 @@
+{  
+ "extends": "./tsconfig.json",  
+ "compilerOptions": {  
+   "outDir": "../wwwroot/js", // Output compiled JavaScript to the Razor Pages static files directory  
+   "target": "ES6",           // Use ECMAScript 6 as the target  
+   "module": "ESNext",        // Use ESNext module system  
+   "strict": true,            // Enable strict type-checking  
+   "esModuleInterop": true,   // Allow interoperability with CommonJS modules  
+   "skipLibCheck": true,      // Skip type checking of declaration files  
+   "forceConsistentCasingInFileNames": true // Enforce consistent casing in file names  
+ },  
+ "include": [  
+   "./**/*.ts"                // Include all TypeScript files in the current directory and subdirectories  
+ ],  
+ "exclude": [  
+   "node_modules",            // Exclude dependencies  
+   "**/*.spec.ts"             // Exclude test files  
+ ]  
+}

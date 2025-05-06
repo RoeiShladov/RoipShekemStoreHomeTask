@@ -1,0 +1,85 @@
+<div class="add-product-container">
+  <app-user-info-bar></app-user-info-bar>
+  <mat-card class="add-product-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h2>Add Product</h2>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="addProduct()" #addProductForm="ngForm" novalidate>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Description</mat-label>
+          <textarea matInput id="description" name="description" [(ngModel)]="newProduct.description"
+                    #description="ngModel"></textarea>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Price</mat-label>
+          <input matInput type="number" id="price" name="price" [(ngModel)]="newProduct.price" required min="0"
+                 #price="ngModel">
+          <mat-error *ngIf="price.invalid && (price.dirty || price.touched)">
+            Price is required and must be non-negative.
+          </mat-error>
+          <mat-icon matSuffix>attach_money</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Quantity</mat-label>
+          <input matInput type="number" id="quantity" name="quantity" [(ngModel)]="newProduct.quantity" required
+                 min="0" #quantity="ngModel">
+          <mat-error *ngIf="quantity.invalid && (quantity.dirty || quantity.touched)">
+            Quantity is required and must be non-negative.
+          </mat-error>
+          <mat-icon matSuffix>production_quantity</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Image URL</mat-label>
+          <input matInput id="imageUrl" name="imageUrl" [(ngModel)]="newProduct.imageUrl" #imageUrl="ngModel">
+          <mat-icon matSuffix>image</mat-icon>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="addProductForm.invalid"
+                class="add-button">
+          Add Product
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="remove-product-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h2>Remove Product</h2>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="removeProduct()" #removeProductForm="ngForm" novalidate>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Username</mat-label>
+          <input matInput id="username" name="username" [(ngModel)]="removeProductData.username" required
+                 #username="ngModel">
+          <mat-error *ngIf="username.invalid && (username.dirty || username.touched)">
+            Username is required.
+          </mat-error>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Product Name</mat-label>
+          <input matInput id="productName" name="productName" [(ngModel)]="removeProductData.productName" required
+                 #productName="ngModel">
+          <mat-error *ngIf="productName.invalid && (productName.dirty || productName.touched)">
+            Product Name is required.
+          </mat-error>
+        </mat-form-field>
+
+        <button mat-raised-button color="warn" type="submit" [disabled]="removeProductForm.invalid"
+                class="remove-button">
+          Remove Product
+        </button>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Runtime.InteropServices;
 
 namespace RoipBackend.Models
 {   
@@ -30,7 +31,7 @@ namespace RoipBackend.Models
 
         [Url(ErrorMessage = C.IMAGE_URL_VALIDATION_STR)]
         public string ImageUrl { get; set; }
-
+       
         [Timestamp]
         public byte[] RowVersion { get; set; }
 

@@ -126,15 +126,15 @@ namespace RoipBackend
         public const string PRODUCT_DELETED_SUCCESSFULLY_STR = "Product deleted successfully.";
 
         // API Endpoints
-        public const string GET_ALL_USERS_API_STR = "get-all-users";
-        public const string GET_ALL_PRODUCTS_API_STR = "get-all-products";
+        public const string GET_ALL_USERS_API_STR = "all-users";
+        public const string GET_ALL_PRODUCTS_API_STR = "all-products";
         public const string REGISTER_API_STR = "register";
         public const string LOGIN_API_STR = "login";
         public const string LOGOUT_API_STR = "logout";
         public const string ADD_PRODUCT_API_STR = "add-product";
-        public const string DELETE_PRODUCT_API_STR = "delete-product/{productName}";
-        public const string BUY_PRODUCT_API_STR = "buy-product/{productName}";
-        public const string SEARCH_PRODUCT_API_STR = "search-product/{productName}";
+        public const string DELETE_PRODUCT_API_STR = "delete-product";
+        public const string BUY_PRODUCT_API_STR = "buy-product";
+        public const string SEARCH_PRODUCT_API_STR = "search-filter";
         public const string HEALTH_CHECK_API_STR = "health-check";
 
         // Error Messages
@@ -155,6 +155,9 @@ namespace RoipBackend
         public const string ERROR_CLEANING_DB_LOGS_STR = "Error cleaning database logs.";
         public const string ERROR_STOPPING_TIMER_STR = "Error stopping timer.";
         public const string DATABASE_LOG_CLEANUP_SERVICE_STOPPED_STR = "DatabaseLogCleanupService has stopped.";
+        public const string ERROR_CONNECTING_HUB_STR = "Error in OnConnectedAsync:";
+        public const string ERROR_DISCONNECTING_HUB_STR = "Error in OnDisconnectedAsync:";
+        public const string ERROR_FETCHING_AUTHENTICATED_USER_STR = "Error in FetchAuthenticatedUser:";
 
         // Environment
         public const string PRODUCTION_ENV_STR = "Production";
@@ -171,10 +174,14 @@ namespace RoipBackend
         public const int NEGATIVE_LOGS_CLEANUP_INTERVAL = -14; // 14 days
         public const int DB_REQUEST_TIMEOUT = 30; // 30 seconds
         public const int ADDITIONAL_FILE_LOGS_INTERVAL = 1800000; // 30 minutes
+        public const string NAME_STR = "Name";
+        public const string EMAIL_STR = "Email";
+        public const string ROLE_STR = "Role";
         public const string CASHED_RETRY_LOGS_FILE_LOCATION_STR = "../CashedQuerylogs/fallback.log";
         public const string ADDITIONAL_EXCEPTION_MESSAGE_LOG_STR = "Additional Exception message from LoggerService";
         public const string ERROR_PROCESSING_FALLBACK_LOG_STR = "Error while processing fallback log";
-        public const string HUB_LIVE_BROADCAST_STR = "UpdateLiveConnectedUsers";
+        public const string HUB_LIVE_BROADCAST_ACTION_STR = "UpdateLiveConnectedUsers";
+        public const string HUB_LIVE_BROADCAST_URL_STR = "/user-connection-hub";
         public const string HUB_LIVE_ON_DEMAND_BROADCAST_STR = "ReceiveConnectedUsers";
         public const string FILTERED_PRODUCTS_RETRIEVE_SUCCESS_STR = "Filtered products retrieved successfully.";
         public const string SOMETHING_WENT_WRONG_STR = "Action failed";

@@ -1,0 +1,75 @@
+<div class="register-container">
+  <mat-card class="register-card">
+    <mat-card-header>
+      <mat-card-title>
+        <h2>Register</h2>
+      </mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <form (ngSubmit)="register()" #registerForm="ngForm" novalidate>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Username</mat-label>
+          <input matInput id="username" name="username" [(ngModel)]="newUser.username" required
+                 #username="ngModel" minlength="3" maxlength="16">
+          <mat-error *ngIf="username.invalid && (username.dirty || username.touched)">
+            <span *ngIf="username.errors?.['required']">Username is required.</span>
+            <span *ngIf="username.errors?.['minlength']">Username must be at least 3 characters.</span>
+            <span *ngIf="username.errors?.['maxlength']">Username cannot be more than 16 characters.</span>
+          </mat-error>
+          <mat-icon matSuffix>person</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" id="email" name="email" [(ngModel)]="newUser.email" required email
+                 #email="ngModel">
+          <mat-error *ngIf="email.invalid && (email.dirty || email.touched)">
+            <span *ngIf="email.errors?.['required']">Email is required.</span>
+            <span *ngIf="email.errors?.['email']">Please enter a valid email address.</span>
+          </mat-error>
+          <mat-icon matSuffix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" id="password" name="password" [(ngModel)]="newUser.password" required
+                 minlength="6" #password="ngModel">
+          <mat-error *ngIf="password.invalid && (password.dirty || password.touched)">
+            <span *ngIf="password.errors?.['required']">Password is required.</span>
+            <span *ngIf="password.errors?.['minlength']">Password must be at least 6 characters long.</span>
+          </mat-error>
+          <mat-icon matSuffix>lock</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Phone Number</mat-label>
+          <input matInput type="tel" id="phoneNumber" name="phoneNumber" [(ngModel)]="newUser.phoneNumber" required
+                 #phoneNumber="ngModel" pattern="^[0-9]{8,10}$">
+          <mat-error *ngIf="phoneNumber.invalid && (phoneNumber.dirty || phoneNumber.touched)">
+            <span *ngIf="phoneNumber.errors?.['required']">Phone Number is required.</span>
+            <span *ngIf="phoneNumber.errors?.['pattern']">Please enter a valid phone number (8-10 digits).</span>
+          </mat-error>
+          <mat-icon matSuffix>phone</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Address</mat-label>
+          <input matInput id="address" name="address" [(ngModel)]="newUser.address" required #address="ngModel">
+          <mat-error *ngIf="address.invalid && (address.dirty || address.touched)">
+            <span *ngIf="address.errors?.['required']">Address is required.</span>
+          </mat-error>
+          <mat-icon matSuffix>home</mat-icon>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid"
+                class="register-button">
+          Register
+        </button>
+
+        <mat-error *ngIf="errorMessage" class="error-message">{{ errorMessage }}</mat-error>
+      </form>
+      <p class="login-link">Already have an account? <a routerLink="/login">Login</a></p>
+    </mat-card-content>
+  </mat-card>
+</div>

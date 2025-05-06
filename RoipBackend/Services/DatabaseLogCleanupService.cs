@@ -11,7 +11,7 @@ public class DatabaseLogCleanupService : IDisposable, IHostedService
     private readonly AppDbContext _DBcontext;
     private Timer _timer;
 
-    public DatabaseLogCleanupService(IServiceProvider serviceProvider, ILogger<DatabaseLogCleanupService> logger, AppDbContext dbContext)
+    public DatabaseLogCleanupService(AppDbContext dbContext)
     {
         _DBcontext = dbContext;
     }
