@@ -9,16 +9,23 @@ using System.Text;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Data.Entity;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using RoipBackend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add IConfiguration to the builder  
 var configuration = builder.Configuration;
 configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 configuration.AddEnvironmentVariables();
 
-// Add services to the container.  
+
+// Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
 
 // Add DbContext with MySQL provider
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -27,12 +34,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 // Add a hosted service to clean database logs every two weeks
 //builder.Services.AddHostedService<DatabaseLogCleanupService>();
 // Add services to the DI container.
-builder.Services.AddScoped<ILoggerService, LoggerService>();
-builder.Services.AddScoped<IUserService, UserService>(); 
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<LoggerService>();
+builder.Services.AddScoped<UserService>(); 
+builder.Services.AddScoped<ProductService>();
 builder.Services.AddRazorPages();
 builder.Services.AddSignalR();
-builder.Services.AddSingleton<JwtAuthService>(provider =>
+builder.Services.AddScoped<JwtAuthService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
     var logger = provider.GetRequiredService<LoggerService>();
@@ -78,70 +85,72 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     };
 });
 
-// Add Azure Key Vault to configuration  
-//var keyVaultName = configuration["KeyVaultName"]; // e.g., from appsettings.json or environment variable  
-//var keyVaultUri = new Uri($"https://{keyVaultName}.vault.azure.net/");
-//builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
-// Create a SecretClient to interact with Azure Key Vault  
-//var client = new SecretClient(keyVaultUri, new DefaultAzureCredential());
-//var _keyVaultName = configuration["KeyVaultName"]; // e.g., from appsettings.json or environment variable
-//var _keyVaultUri = new Uri($"https://{_keyVaultName}.vault.azure.net/");
-// Create a SecretClient to interact with Azure Key Vault
-//var _client = new SecretClient(_keyVaultUri, new DefaultAzureCredential());
-// Retrieve a secret from the Key Vault
-//KeyVaultSecret secret = client.GetSecret("MySecret"); // Synchronous retrieval
-// Fix 1: Change DatabaseLogCleanupService to use a scoped service provider for AppDbContext  
-//builder.Services.AddHostedService<DatabaseLogCleanupService>(provider =>
-//{
-//    var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-//    // Fix 1: Change DatabaseLogCleanupService to use a scoped service provider for AppDbContext  
-//    builder.Services.AddHostedService(provider =>
-//    {
-//        var scopeFactory = provider.GetRequiredService<IServiceScopeFactory>();
-//        using var scope = scopeFactory.CreateScope();
-//        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-//        return new DatabaseLogCleanupService(dbContext);
-//    });
-//    return new DatabaseLogCleanupService(scopeFactory);
-//});
-
-// Fix 2: Ensure LoggerService is registered as a scoped service  
-builder.Services.AddScoped<LoggerService>();
-
-// Fix 3: Update UserService and ProductService constructors to accept ILoggerService instead of LoggerService  
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<IProductService, ProductService>();
-builder.Services.AddAuthorization();
-
 //Access the environment
 var environment = builder.Environment.EnvironmentName; // e.g., "Development", "Production"
 Console.WriteLine($"Current Environment: {environment}");
 
 //DI container is being finalized
 var app = builder.Build();
-
-// Ensure database tables are created
-using (var scope = app.Services.CreateScope())
+//Ensure database and tables are created
+using (var serviceScope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    //dbContext.Database.Migrate(); // Applies pending migrations
-    dbContext.Database.EnsureCreated(); // Ensures that the database tables are created
+    var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+    // Check if the database exists
+    var databaseCreator = context.Database.GetService<IRelationalDatabaseCreator>();
+    if (databaseCreator.Exists())
+    {
+        // Check if the database has tables
+        if (databaseCreator.HasTables())
+        {
+            Console.WriteLine("Database and tables exist.");
+        }
+        else
+        {
+
+            // Apply pending migrations instead of ensuring database creation
+            //context.Database.Migrate(); // Applies any pending migrations for the context to the database
+            context.Database.EnsureCreated();
+            var scope = app.Services.CreateScope();
+            var serviceProvider = scope.ServiceProvider;
+
+            // Seed the database with initial data
+            SeedData.Initialize(serviceProvider);
+
+            Console.WriteLine("Database exists, but no tables found. Migrations applied.");
+            
+    
+            //context.Database.EnsureCreated(); // Creates the database if it doesn't exist
+            //var scope = app.Services.CreateScope();
+            //var serviceProvider = scope.ServiceProvider;
+            //SeedData.Initialize(serviceProvider);
+
+
+                //SeedData.Initialize(app.Services); // Seed the database with initial data (custom hand writed 10 rows for 'User' and 'Product' tables, 1 of the Users is Admin)
+                Console.WriteLine("Database exists, but no tables found.");
+        }
+    }
+    else
+    {
+        Console.WriteLine("Database does not exist.");
+    }
 }
 
-// Configure the HTTP request pipeline.  
-if (!app.Environment.IsDevelopment())
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.  
-    app.UseHsts();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
+
 
 app.UseCors("AllowAngularClient");
 

@@ -6,43 +6,43 @@
 }
 
 .login-card {
- width: 350px; /* Increased width */
- max-width: 90%; /* Responsive width */
- margin: 20px;
- box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Softer shadow */
+  width: 350px !important; /* Increased width */
+  max-width: 90%; /* Responsive width */
+  margin: 20px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Softer shadow */
 
- mat-card-header {
-   text-align: center;
-   padding: 20px;
+  mat-card-header {
+    text-align: center;
+    padding: 20px;
 
-   mat-card-title {
-     h2 {
-       color: #3f51b5; /* Primary color */
-       margin: 0;
-       font-size: 2em;
-     }
-   }
- }
+    mat-card-title {
+      h2 {
+        color: #3f51b5; /* Primary color */
+        margin: 0;
+        font-size: 2em;
+      }
+    }
+  }
 
- mat-card-content {
-   display: flex;
-   flex-direction: column;
-   padding: 20px;
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
 
-   .form-field {
-     width: 100%;
-     margin-bottom: 15px;
-   }
+    .form-field {
+      width: 100% !important;
+      margin-bottom: 15px;
+    }
 
-   .login-button {
-     margin-top: 20px;
-     width: 100%; /* Full width button */
-   }
+    .login-button {
+      margin-top: 20px;
+      width: 100%; /* Full width button */
+    }
 
-   .error-message {
-     margin-top: 10px;
-     color: #f44336; /* Error color */
-     font-size: 0.9em;
-   }
- }
+    .error-message {
+      margin-top: 10px;
+      color: #f44336; /* Error color */
+      font-size: 0.9em;
+    }
+  }
 }

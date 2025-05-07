@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, NgModule, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
@@ -6,12 +6,27 @@ import { LoginCredentialsModel } from '../../models/login-credentials.model';
 import { UserModel } from '../../models/user.model'; // Import the model
 import { ServiceResult } from '../../models/service-result.model';
 import { SignalRService } from '../../services/signalr.service'; // Import the SignalR service
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CommonModule } from '@angular/common';
+import { BrowserModule } from '@angular/platform-browser';
+import { AppRoutingModule } from '../../app-routing.module'; // Import the routing module
+import { AppComponent } from '../../app.component';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
+  imports: [BrowserModule, AppRoutingModule, CommonModule, FormsModule, MatIconModule, BrowserAnimationsModule, MatButtonModule, MatPaginatorModule, MatTableModule, MatInputModule, MatFormFieldModule],
 })
+
 export class LoginComponent implements OnInit {
   loginForm: FormGroup;
   errorMessage = '';
@@ -33,10 +48,17 @@ export class LoginComponent implements OnInit {
     if (this.authService.isLoggedIn$) {
       this.authService.isLoggedIn$.subscribe((isLoggedIn: any) => {
         if (isLoggedIn) {
-          this.router.navigate(['/products']);
+          alert('User is already logged in. Redirecting to products page...'); // Debugging line
+          console.log('User is already logged in. Redirecting to products page...'); // Debugging line
+          this.router.navigate(['products']);
         }
       });
+      console.log('User is not logged in'); // Debugging line
     }
+  }
+
+  registerPage(): void {
+    this.router.navigate(['register']);
   }
 
   login(): void {
@@ -53,16 +75,17 @@ export class LoginComponent implements OnInit {
               this.authService.setCurrentUser(user.data);
               this.signalRService.sendData("FetchAuthenticatedUser", user.data);
             }
-            this.router.navigate(['/products']);
+            this.router.navigate(['products']);
           } else {
             this.errorMessage = user.message || 'Login failed. Please check your credentials.';
           }
-          this.router.navigate(['/products']);
+          this.router.navigate(['products']);
         },
         error: (error: { message: string; }) => {
           this.isLoading = false;
           this.errorMessage = error.message || 'Login failed. Please check your credentials.';
           console.error('Login error:', error);
+          alert('Login failed. Please check your credentials.');
         }
       });
     }

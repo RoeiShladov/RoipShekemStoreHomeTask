@@ -1,22 +1,26 @@
 <div class="live-status-container">
-  <app-user-info-bar></app-user-info-bar>
   <h2>Live Status User Connections</h2>
   <div *ngIf="isAdmin; else notAdmin">
     <h3>Connected Users</h3>
+    <div class="action-bar">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Connected User...</mat-label>
+        <app-search-filter (searchChange)="onSearchChanged($event)"></app-search-filter>
+      </mat-form-field>
+    </div>
     <ul>
-      <div class="action-bar">
-        <mat-form-field appearance="outline" class="search-field">
-          <mat-label>Search Connected User...</mat-label>
-          <app-searchfilter [searchTerm]="searchTerm" (searchChange)="onSearchChange($event)"></app-searchfilter>
-        </mat-form-field>
-      </div>
-      <br />
       <li *ngFor="let user of connectedUsers">
-        <strong>Connection ID:</strong> {{ user.ConnectionId }} <br>
-        <strong>Name:</strong> {{ user.Name }} <br>
-        <strong>Email:</strong> {{ user.Email }}
-        <strong>Role:</strong> {{ user.Role }}
+        <strong>Connection ID:</strong> {{ user?.connectionId }} <br>
+        <strong>Name:</strong> {{ user?.name }} <br>
+        <strong>Email:</strong> {{ user?.email }} <br>
+        <strong>Role:</strong> {{ user?.role }}
       </li>
     </ul>
-  </div>  
+  </div>
+  <ng-template #notAdmin>
+    <div class="not-admin-message">
+      <h3>Access Denied</h3>
+      <p>You do not have the necessary permissions to view this page.</p>
+    </div>
+  </ng-template>
 </div>

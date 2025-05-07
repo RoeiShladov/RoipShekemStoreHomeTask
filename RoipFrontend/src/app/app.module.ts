@@ -22,11 +22,16 @@ import { SignalRService } from './services/signalr.service';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';  
 import { ErrorInterceptor } from './interceptors/error.interceptor';  
 import { UserResolver } from './resolvers/user.resolver';  
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';  
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
-@NgModule({  
+
+@NgModule({
+  schemas: [
+    CUSTOM_ELEMENTS_SCHEMA
+  ],
  declarations: [  
-   AppComponent,  
+   AppComponent,
+
  ],  
  imports: [  
    BrowserModule,  
@@ -40,8 +45,19 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
    MatPaginatorModule,  
    BrowserAnimationsModule,  
    AppRoutingModule,  
-   NgbModule,  
- ],  
+   NgbModule,
+  ],
+  exports: [
+    FormsModule,
+    MatCardModule, // Ensure MatCardModule is imported here  
+    MatFormFieldModule,
+    MatInputModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTableModule,
+    MatPaginatorModule,
+    BrowserAnimationsModule,
+  ],
  providers: [  
    AuthGuard,  
    AdminGuard,  
@@ -54,7 +70,6 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
    { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },  
    { provide: JWT_OPTIONS, useValue: JWT_OPTIONS }  
  ],  
- schemas: [CUSTOM_ELEMENTS_SCHEMA],  
  bootstrap: [AppComponent]  
 })  
 export class AppModule { }

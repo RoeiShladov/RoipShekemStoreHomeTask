@@ -9,7 +9,7 @@ namespace RoipBackend.Models
     [Microsoft.EntityFrameworkCore.Index(nameof(Email), IsUnique = true)]
     public class User
     {
-        [Required]
+        [Key]        
         [Range(C.ID_MINIMUM_RANGE, C.ID_MAXIMUM_RANGE)]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)] // Ensures auto-increment
         public string Id { get; set; }
@@ -24,7 +24,6 @@ namespace RoipBackend.Models
 
         public string Role { get; set; } // "Admin" or "Customer" 
 
-        [Key]
         [Required(ErrorMessage = C.USER_EMAIL_MANDATORY_STR)]
         [EmailAddress(ErrorMessage = C.PLEASE_VALID_EMAIL_STR)]
         public string Email { get; set; }
@@ -38,7 +37,18 @@ namespace RoipBackend.Models
         public string Address { get; set; }
 
         [Timestamp]
-        public byte[] RowVersion { get; set; } // Removed the [Optional] attribute as it is invalid here.
+        public byte[] ?RowVersion { get; set; } // Removed the [Optional] attribute as it is invalid here.
+
+        //public User(string username, string password, string role, string email, string phoneNumber, string address, byte[] rowVersion)
+        //{
+        //    this.Username = username;
+        //    this.Password = password;
+        //    this.Role = role;
+        //    this.Email = email;
+        //    this.PhoneNumber = phoneNumber;
+        //    this.Address = address;
+        //    this.RowVersion = rowVersion; // Initialize RowVersion with a default value.
+        //}
 
         public User(string username, string password, string role, string email, string phoneNumber, string address)
         {
@@ -48,6 +58,7 @@ namespace RoipBackend.Models
             this.Email = email;
             this.PhoneNumber = phoneNumber;
             this.Address = address;
+            this.RowVersion = new byte[8]; // Initialize RowVersion with a default value.
         }
     }
 }

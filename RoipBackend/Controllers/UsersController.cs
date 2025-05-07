@@ -23,7 +23,7 @@ namespace RoipBackend.Controllers
             _loggerService = loggerService;
         }
 
-        [HttpGet(C.HEALTH_CHECK_API_STR)]
+        [HttpGet(C.JWT_USER_DETAILS_STR)]
         [AllowAnonymous]
         public async Task<IActionResult> GetJWTUserDetailsAsync(
             [Required(ErrorMessage = C.JWT_MODEL_STATE_INVALID_STR)] string jwt)
@@ -58,7 +58,8 @@ namespace RoipBackend.Controllers
                 return Ok(new
                 {
                     result.Message,
-                    result.StatusCode,                    
+                    result.StatusCode,
+                    Data = "OK" // Fixed the issue by explicitly naming the property as "Data"
                 });
             }
 

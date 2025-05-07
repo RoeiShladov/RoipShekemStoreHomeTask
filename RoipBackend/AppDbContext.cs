@@ -17,10 +17,19 @@ namespace RoipBackend
         {
             base.OnModelCreating(modelBuilder);
 
-            // Add RowVersion property to all entities
+            //modelBuilder.Entity<User>()
+            //   .Property(u => u.RowVersion)
+            //   .HasDefaultValue(new byte[8]); // Default value for RowVersion
+
+            //modelBuilder.Entity<Product>()
+            //    .Property(p => p.RowVersion)
+            //    .HasDefaultValue(new byte[8]); // Default value for RowVersion
+
+
+            //Add RowVersion property to all entities
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())
             {
-                modelBuilder.Entity(entityType.ClrType).Property<byte[]>("RowVersion").IsRowVersion();
+                modelBuilder.Entity(entityType.ClrType).Property<byte[]>("RowVersion").IsRowVersion().IsRequired(false);
             }
         }
 

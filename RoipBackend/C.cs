@@ -43,7 +43,7 @@ namespace RoipBackend
         // User Validation
         public const int MINIMUM_USER_NAME_LENGTH = 2;
         public const int MINIMUM_PASSWORD_LENGTH = 8;
-        public const int MAXIMUM_PASSWORD_LENGTH = 16;
+        public const int MAXIMUM_PASSWORD_LENGTH = 60;
         public const string USER_NAME_MANDATORY_STR = "Username is mandatory.";
         public const string USER_PASSWORD_MANDATORY_STR = "Password is mandatory.";
         public const string USER_EMAIL_MANDATORY_STR = "Email is mandatory.";
@@ -126,8 +126,8 @@ namespace RoipBackend
         public const string PRODUCT_DELETED_SUCCESSFULLY_STR = "Product deleted successfully.";
 
         // API Endpoints
-        public const string GET_ALL_USERS_API_STR = "all-users";
-        public const string GET_ALL_PRODUCTS_API_STR = "all-products";
+        public const string GET_ALL_USERS_API_STR = "get-all-users";
+        public const string GET_ALL_PRODUCTS_API_STR = "get-all-products";
         public const string REGISTER_API_STR = "register";
         public const string LOGIN_API_STR = "login";
         public const string LOGOUT_API_STR = "logout";
@@ -136,6 +136,7 @@ namespace RoipBackend
         public const string BUY_PRODUCT_API_STR = "buy-product";
         public const string SEARCH_PRODUCT_API_STR = "search-filter";
         public const string HEALTH_CHECK_API_STR = "health-check";
+        public const string JWT_USER_DETAILS_STR = "jwt-user-details";
 
         // Error Messages
         public const string INTERNAL_SERVER_ERROR_STR = "Status: 500, Internal server error. Please try again or contact Admin";

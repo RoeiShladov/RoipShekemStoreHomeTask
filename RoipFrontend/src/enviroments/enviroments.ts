@@ -1,4 +1,5 @@
-export const environment = {
-  production: false,
-  apiUrl: 'https://localhost:43343/api'
+export const environment = {  
+ production: false,  
+  apiUrl: `https://localhost:${5001}/`,  
+ serverPort: 5001  
 };

@@ -1,13 +1,24 @@
 <div class="add-product-container">
-  <app-user-info-bar></app-user-info-bar>
+  <div class="user-info-bar" *ngIf="user">
+    <span class="greeting" [(ngModel)]="user">Hello, {{ user.name }}</span>
+    <span class="separator" [(ngModel)]="user"> | </span>
+    <span class="email" [(ngModel)]="user">Email: {{ user.email }}</span>
+    <span class="separator" [(ngModel)]="user"> | </span>
+    <span class="role" [(ngModel)]="user">Role: {{ user.role }}</span>
+    <span class="connectionId" [(ngModel)]="user">Role: {{ user.connectionId }}</span>
+  </div>
   <mat-card class="add-product-card">
-    <mat-card-header>
-      <mat-card-title>
-        <h2>Add Product</h2>
-      </mat-card-title>
-    </mat-card-header>
     <mat-card-content>
-      <form (ngSubmit)="addProduct()" #addProductForm="ngForm" novalidate>
+      <form #addProductForm="ngForm" novalidate>
+        <mat-card-header>
+          <mat-card-title>
+            <h2>Add Product</h2>
+          </mat-card-title>
+        </mat-card-header>
+        <mat-form-field appearance="outline" class="form-field">
+          <mat-label>Name</mat-label>
+          <input matInput id="name" name="name" [(ngModel)]="newProduct.name" #name="ngModel">
+        </mat-form-field>
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Description</mat-label>
@@ -41,7 +52,7 @@
           <mat-icon matSuffix>image</mat-icon>
         </mat-form-field>
 
-        <button mat-raised-button color="primary" type="submit" [disabled]="addProductForm.invalid"
+        <button mat-raised-button color="primary" type="submit" (ngSubmit)="addProduct()" [disabled]="addProductForm.invalid"
                 class="add-button">
           Add Product
         </button>
@@ -56,26 +67,17 @@
       </mat-card-title>
     </mat-card-header>
     <mat-card-content>
-      <form (ngSubmit)="removeProduct()" #removeProductForm="ngForm" novalidate>
-        <mat-form-field appearance="outline" class="form-field">
-          <mat-label>Username</mat-label>
-          <input matInput id="username" name="username" [(ngModel)]="removeProductData.username" required
-                 #username="ngModel">
-          <mat-error *ngIf="username.invalid && (username.dirty || username.touched)">
-            Username is required.
-          </mat-error>
-        </mat-form-field>
-
+      <form #removeProductForm="ngForm" novalidate>
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Product Name</mat-label>
-          <input matInput id="productName" name="productName" [(ngModel)]="removeProductData.productName" required
+          <input matInput id="productName" [(ngModel)]="productName" name="productName" required
                  #productName="ngModel">
           <mat-error *ngIf="productName.invalid && (productName.dirty || productName.touched)">
             Product Name is required.
           </mat-error>
         </mat-form-field>
 
-        <button mat-raised-button color="warn" type="submit" [disabled]="removeProductForm.invalid"
+        <button mat-raised-button color="warn" type="submit" (ngSubmit)="deleteProduct()"
                 class="remove-button">
           Remove Product
         </button>

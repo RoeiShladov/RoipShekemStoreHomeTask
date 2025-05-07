@@ -29,7 +29,7 @@ namespace RoipBackend.Hubs
                 ConnectedUsers.TryAdd(Context.ConnectionId, new SignalRUserDTO
                 {
                     ConnectionId = Context.ConnectionId,
-                    Username = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "",
+                    Name = Context.User?.FindFirst(ClaimTypes.Name)?.Value ?? "",
                     Email = Context.User?.FindFirst(ClaimTypes.Email)?.Value ?? "",
                     Role = Context.User?.FindFirst(ClaimTypes.Role)?.Value ?? C.ANONYMOUS_STR
                 });
@@ -75,7 +75,7 @@ namespace RoipBackend.Hubs
                     ConnectedUsers[connectionId] = new SignalRUserDTO
                     {
                         ConnectionId = connectionId,
-                        Username = name,
+                        Name = name,
                         Email = email,
                         Role = role
                     };

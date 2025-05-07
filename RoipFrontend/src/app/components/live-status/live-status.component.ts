@@ -1,33 +1,69 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
-import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
-import { AuthService } from '../../services/auth.service';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { SignalRService } from '../../services/signalr.service';
-import { SignalRUserModel } from '../../models/signalr-user.model'; // Adjust the import path as necessary
-import { SearchFilterComponent } from '../../shared/components/search-filter/search-filter.component'; // Adjust the import path as necessary
-import { BehaviorSubject } from 'rxjs';
+import { SignalRUserModel } from '../../models/signalr-user.model';
+import { Subscription } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { NgIf } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { SearchFilterComponent } from '../../shared/components/search-filter/search-filter.component';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
-  @Component({
-    selector: 'app-live-status',
-    templateUrl: './live-status.component.html',
-    styleUrls: ['./live-status.component.scss']
-  })
-  export class LiveStatusComponent implements OnInit, OnDestroy {
-    private connectedUsersSubject = new BehaviorSubject<{ [key: string]: SignalRUserModel }>({});
-    connectedUsers$ = this.connectedUsersSubject.asObservable();
-    private hubUrl: string = 'https://localhost/user-connection-hub';
+@Component({
+  selector: 'app-live-status',
+  standalone: true,
+  templateUrl: './live-status.component.html',
+  styleUrls: ['./live-status.component.scss'],
+  imports: [SearchFilterComponent, NgIf, MatCardModule, CommonModule, FormsModule, MatIconModule, BrowserAnimationsModule, MatButtonModule, MatPaginatorModule, MatTableModule, MatInputModule, MatFormFieldModule],
+})
 
-    constructor(private signalRService: SignalRService) {}
 
-    ngOnInit(): void {
-      this.signalRService.startConnection(this.hubUrl).then(() => {
-        this.signalRService.hubConnection?.on('UpdateLiveConnectedUsers', (users: { [key: string]: SignalRUserModel }) => {
-          this.connectedUsersSubject.next(users);
-        });
-      }).catch(err => console.error('Error starting SignalR connection:', err));
+export class LiveStatusComponent implements OnInit, OnDestroy {
+  connectedUsers: SignalRUserModel[] = []; // Change to an array
+  private connectedUsersSubscription: Subscription | undefined;
+  isAdmin = false;
+
+  constructor(private router: Router,
+private signalRService: SignalRService, private authService: AuthService) { }
+
+  ngOnInit(): void {
+      this.authService.currentUser$.subscribe(user => {
+      this.isAdmin = user?.role === 'Admin';
+    });
+
+    if (this.isAdmin) {
+      this.signalRService.startConnection('https://localhost/user-connection-hub')
+        .then(() => {
+          this.connectedUsersSubscription = this.signalRService.connectedUsers$.subscribe(users => {
+            // Convert the object to an array
+            this.connectedUsers = Object.values(users);
+          });
+        })
+        .catch(err => console.error('Error starting SignalR connection:', err));
     }
-
-    ngOnDestroy(): void {
-      this.signalRService.stopConnection().catch(err => console.error('Error stopping SignalR connection:', err));
-      this.connectedUsersSubject.complete(); // Complete the subject to clean up resources
+    else {
+      this.router.navigate(['products']);
     }
   }
+
+  ngOnDestroy(): void {
+    if (this.connectedUsersSubscription) {
+      this.connectedUsersSubscription.unsubscribe();
+    }
+    this.signalRService.stopConnection().catch(err => console.error('Error stopping SignalR connection:', err));
+  }
+
+  onSearchChanged(filterText: string): void {
+    // Implement your search logic here if needed
+    // This example just logs the filter text
+    console.log('Search text:', filterText);
+  }
+}

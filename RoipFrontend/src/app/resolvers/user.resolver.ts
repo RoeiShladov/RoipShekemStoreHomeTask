@@ -28,7 +28,7 @@ export class UserResolver implements Resolve<ServiceResult<UserModel> | null> {
           };
           return result;
         } else {
-          this.router.navigate(['/login']);
+          this.router.navigate(['login']);
           const result: ServiceResult<UserModel> = {
             success: false,
             data: null,

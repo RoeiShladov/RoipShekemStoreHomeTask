@@ -18,7 +18,7 @@ export class ProductService {
       .set('jwt', jwt)
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
-    return this.http.get<ServiceResult<ProductModel[]>>(`${this.apiUrl}/all-products`, { params: { jwt } });
+    return this.http.get<ServiceResult<ProductModel[]>>(`${this.apiUrl}/get-all-products`, { params: { jwt } });
   }
 
   addProduct(jwt: string, product: ProductModel): Observable<ServiceResult<string>> {

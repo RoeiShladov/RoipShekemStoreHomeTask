@@ -6,6 +6,7 @@ import { LoginCredentialsModel } from '../models/login-credentials.model';
 import { ServiceResult } from '../models/service-result.model';
 import { environment } from '../../enviroments/enviroments';
 import { UserModel } from '../models/user.model'; // Import the UserModel
+import { Router } from '@angular/router'; // Import Router }
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,8 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private jwtHelper: JwtHelperService
+    private jwtHelper: JwtHelperService,
+    private router: Router // Inject Router
   ) { }
 
   login(credentials: LoginCredentialsModel): Observable<ServiceResult<UserModel>> {
@@ -40,6 +42,7 @@ export class AuthService {
   logout(): void {
     this.removeToken();
     this.currentUserSubject.next(null);
+    this.router.navigate(['login']);
   }
 
   getToken(): string | null{

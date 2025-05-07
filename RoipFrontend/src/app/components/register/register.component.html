@@ -10,7 +10,7 @@
 
         <mat-form-field appearance="outline" class="form-field">
           <mat-label>Username</mat-label>
-          <input matInput id="username" name="username" [(ngModel)]="newUser.username" required
+          <input matInput id="username" name="username" [(ngModel)]="newUser.name" required
                  #username="ngModel" minlength="3" maxlength="16">
           <mat-error *ngIf="username.invalid && (username.dirty || username.touched)">
             <span *ngIf="username.errors?.['required']">Username is required.</span>
@@ -63,7 +63,7 @@
         </mat-form-field>
 
         <button mat-raised-button color="primary" type="submit" [disabled]="registerForm.invalid"
-                class="register-button">
+                class="register-button" onclick="register()">
           Register
         </button>
 

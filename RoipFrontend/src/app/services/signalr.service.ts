@@ -2,13 +2,18 @@ import { Injectable } from '@angular/core';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr';
 import { Subject } from 'rxjs';
 import { UserModel } from '../models/user.model'; // Adjust the import path as necessary }
+import { SignalRUserModel } from '../models/signalr-user.model'; // Adjust the import path as necessary
+
+export interface ConnectedUsers { //define the type
+  [key: string]: SignalRUserModel;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class SignalRService {
   public hubConnection: HubConnection | undefined;
-  private connectedUsersSubject = new Subject<any>();
+  private connectedUsersSubject = new Subject<ConnectedUsers>();  // Use the interface
   public connectedUsers$ = this.connectedUsersSubject.asObservable();
 
 
@@ -26,6 +31,10 @@ export class SignalRService {
     }
   }
 
+  getConnectedUsers(): Subject<any> {
+    return this.connectedUsersSubject;
+  }
+
   startConnection(hubUrl: string): Promise<void> {
     this.hubConnection = new HubConnectionBuilder()
       .withUrl(hubUrl)
@@ -33,7 +42,7 @@ export class SignalRService {
     // Send data to the hub
     
     if (this.hubConnection) {
-      this.hubConnection.on('UpdateLiveConnectedUsers', (users: any) => {
+      this.hubConnection.on('UpdateLiveConnectedUsers', (users: ConnectedUsers) => {
         console.log('Connected users updated:', users);
         this.connectedUsersSubject.next(users);                   
       });
